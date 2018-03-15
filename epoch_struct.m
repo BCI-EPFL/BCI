@@ -1,4 +1,4 @@
-  function [ struct_epoch ] = epoch_struct( session,h,Align_Event,timebEvent,timeaEvent  )
+  function [ struct_epoch ] = epoch_struct( session,Align_Event,timebEvent,timeaEvent  )
   
 % what in output in the struc
  s=(session.data)'; % to find---->
@@ -6,7 +6,7 @@
  struct_epoch.channels=session.channels;
  struct_epoch.Event_type=session.Event_type(session.Event_type==Align_Event);
  struct_epoch.Event.pos=session.Event_pos(session.Event_type==Align_Event);
- NumTrials=size(h.EVENT.POS(h.EVENT.TYP==Align_Event),1); % because in each trials we'll have the same epoch, considering one is still enough.
+ NumTrials=size(struct_epoch.Event.pos,1); % because in each trials we'll have the same epoch, considering one is still enough.
  NumChannels=size(s,2)-1;
  cstart=abs((timebEvent*struct_epoch.fs)-struct_epoch.Event.pos-1);%position of the aligned event minus the afterEvent
  cstop=(timeaEvent*struct_epoch.fs)+struct_epoch.Event.pos-1;
