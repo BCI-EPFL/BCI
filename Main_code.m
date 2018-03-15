@@ -1,4 +1,4 @@
-function [ struct_epoch ] = epoch_struct( session,Align_Event,timebEvent,timeaEvent  )
+%function [ struct_epoch ] = epoch_struct( session,Align_Event,timebEvent,timeaEvent  )
 
 %what in output in the struc
  s=session.data'; % to find---->
@@ -18,4 +18,4 @@ function [ struct_epoch ] = epoch_struct( session,Align_Event,timebEvent,timeaEv
     ContFeed(:,:,trId)=s(cstart_:cstop_,1:NumChannels); %(time-sample, channels,trials)    %extract the continuos feed of the data from the file
 end
  struct_epoch.data=ContFeed;
-end
+% end
