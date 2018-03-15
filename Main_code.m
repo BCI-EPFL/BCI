@@ -1,21 +1,23 @@
-%function [ struct_epoch ] = epoch_struct( session,Align_Event,timebEvent,timeaEvent  )
+addpath(genpath('biosig'));
+addpath(genpath('folder_runs'));
+addpath(genpath('data'));
+addpath(genpath('eeglab13_4_4b'));
 
-%what in output in the struc
- s=session.data'; % to find---->
- struct_epoch.fs=session.fs;
- struct_epoch.channels=session.channels;
- struct_epoch.Event_type=session.Event_type(session.Event_type==Align_Event);
- struct_epoch.Event.pos=session.Event_pos(session.Event_type==Align_Event);
- NumTrials=size(h.EVENT.POS(h.EVENT.TYP==Align_Event)); % because in each trials we'll have the same epoch, considering one is still enough.
- NumChannels=size(s,2)-1;
- cstart=abs((timebEvent*struct_epoch.fs)-struct_epoch.Event.pos-1);%position of the aligned event minus the afterEvent
- cstop=(timeaEvent*struct_epoch.fs)+struct_epoch.Event.pos-1;
- 
- for trId=1:NumTrials
-    cstart_=cstart(trId);%position of the aligned event minus the afterEvent
-    cstop_=cstop(trId);
-    %disp(['continuos feedback for trial' ,num2str( trId), 'start at', num2str( cstart) ,'end at', num2str(cstop)]);
-    ContFeed(:,:,trId)=s(cstart_:cstop_,1:NumChannels); %(time-sample, channels,trials)    %extract the continuos feed of the data from the file
-end
- struct_epoch.data=ContFeed;
-% end
+load('channel_location_16_10-20_mi');
+
+filename = 's_run1_offlineMIterm_20180703154501.gdf';
+[s, h]= sload(filename);
+
+
+
+session.fs=h.SampleRate;
+session.data=(s)';
+session.channels={chanlocs16.labels};
+session.Event_type=h.EVENT.TYP;
+session.Event_pos=h.EVENT.POS;
+
+
+a=epoch_struct(session,h,200,2,3);
+
+
+
