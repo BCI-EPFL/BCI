@@ -32,37 +32,29 @@ for i=1:16
    ylabel('Power Spectral Density [dB]');
 end    
 
-%% time filtering (non va pero')
-[b,a] = butter(2, [5 40]/512/2);
-filt_data=filter(b,a,session.data');
-session_filt=session;
-session_filt.data=filt_data';
-filt_epoch_baseline=epoch_struct(session_filt,200,0,3);
-
-%%
-figure
-for i=1:16
-filt_pwelch_baseline_1channel=pwelch(filt_epoch_baseline.data(:,i,:), 0.5*filt_epoch_baseline.fs, 0.5*0.5*filt_epoch_baseline.fs);
-
-filt_pwelch_baseline_avg{i}=mean(filt_pwelch_baseline_1channel, 2);
-
-plot(10*log10(filt_pwelch_baseline_avg{1,i}));
-hold on;
-end
-
 %% temporal filtering on the raw data
+[b,a]=butter(2,[5 40]/512/2); %bandpass
 data_filter=zeros(16,330752);
 
 for i=1:size(chanlocs16,2)
-data=session.data(i,:);
-[b,a]=butter(4,[5 40] /512/2); %bandpass
-data_filter(i,:)=filter(b,a,data);
-figure;
-hold on
-plot(data);
-hold on
-plot(data_filter(i,:));
+    data=session.data(i,:);
+    data_filter(i,:)=filter(b,a,data);
 end 
+
+session_filt=session;
+session_filt.data=data_filter;
+session_filt.data(17,:)=zeros(1,length(session_filt.data(2,:)));
+filt_epoch_baseline=epoch_struct(session_filt,200,0,3);
+filt_epoch_MI=epoch_struct(session_filt,400,0,3);
+
+for i=1:16
+   [filt_pwelch_bas_onechannel,freq]=pwelch_for_each_channel(i,filt_epoch_baseline,500,filt_epoch_baseline.fs); 
+   [filt_pwelch_MI_onechannel,freq]=pwelch_for_each_channel(i,filt_epoch_MI,500,filt_epoch_MI.fs); 
+   figure
+   plot(freq,10*log10(pwelch_bas_onechannel),freq,10*log10(pwelch_MI_onechannel),freq,10*log10(filt_pwelch_bas_onechannel),freq,10*log10(filt_pwelch_MI_onechannel))
+   xlabel('Frequency [Hz]');
+   ylabel('Power Spectral Density [dB]');
+end    
 
 
 %% sdp after temporal filtering
