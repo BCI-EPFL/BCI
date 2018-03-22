@@ -1,7 +1,7 @@
 clear;
 close;
 
-addpath(genpath('biosig'));
+addpath(genpath('biosig\t200_FileAccess'));
 addpath(genpath('folder_runs'));
 addpath(genpath('data'));
 addpath(genpath('eeglab13_4_4b'));
@@ -22,9 +22,9 @@ session.Event_pos=h.EVENT.POS;
 
 epoch_baseline=epoch_struct(session,200,0,3);
 
-% pwelch_baseline_avg=zeros(16,130);
+%% pwelch for each channel
 
-figure
+figure;
 for i=1:16
 pwelch_baseline_1channel=pwelch(epoch_baseline.data(:,i,:), 0.5*epoch_baseline.fs, 0.5*0.5*epoch_baseline.fs);
 
@@ -41,11 +41,17 @@ session_filt=session;
 session_filt.data=filt_data';
 filt_epoch_baseline=epoch_struct(session_filt,200,0,3);
 
+%%
 figure
 for i=1:16
 filt_pwelch_baseline_1channel=pwelch(filt_epoch_baseline.data(:,i,:), 0.5*filt_epoch_baseline.fs, 0.5*0.5*filt_epoch_baseline.fs);
 
-<<<<<<< HEAD
+filt_pwelch_baseline_avg{i}=mean(filt_pwelch_baseline_1channel, 2);
+
+plot(10*log10(filt_pwelch_baseline_avg{1,i}));
+hold on;
+end
+
 %% temporal filtering on the raw data
 data_filter=zeros(16,330752);
 
@@ -69,7 +75,7 @@ MI=epoch_struct(session, 400, 0,3);
 
 
 for i=1:size(chanlocs16,2)
-[pwr_b, fre_b]=pwelch(squeeze(baseline.data(:,i,:)),0.5*session.fs,0.5*0.5*session.fs,500,session.fs);
+[pwr_b, fre_b]=pwelch(squeeze(epoch_baseline.data(:,i,:)),0.5*session.fs,0.5*0.5*session.fs,500,session.fs);
 
 plot(fre_b,10*log(pwr_b));%10log
 hold on
@@ -78,7 +84,7 @@ xlabel('frequencies');
 ylabel('spectral density');
 title('spectral density');
 end 
-
+%%
 for i=1:size(chanlocs16,2)
 [pwr_MI,fre_MI]=pwelch(squeeze(MI.data(:,i,:)),0.5*session.fs,0.5*0.5*session.fs,500,session.fs);
 plot(fre_MI,pwr_MI);
@@ -136,10 +142,3 @@ plot(signal_car(:,9))
 
 
 
-=======
-filt_pwelch_baseline_avg{i}=mean(filt_pwelch_baseline_1channel, 2);
->>>>>>> 9e14e4251483c9b6f9590e27810d04a94575f8d4
-
-plot(10*log10(filt_pwelch_baseline_avg{1,i}));
-hold on;
-end
