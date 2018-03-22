@@ -19,21 +19,25 @@ session.channels={chanlocs16.labels};
 session.Event_type=h.EVENT.TYP;
 session.Event_pos=h.EVENT.POS;
 
-
+%% pwelch
 epoch_baseline=epoch_struct(session,200,0,3);
+epoch_MI=epoch_struct(session,400,0,3);
 
-% pwelch_baseline_avg=zeros(16,130);
-
-figure
 for i=1:16
-pwelch_baseline_1channel=pwelch(epoch_baseline.data(:,i,:), 0.5*epoch_baseline.fs, 0.5*0.5*epoch_baseline.fs);
+   [pwelch_bas_onechannel,freq]=pwelch_for_each_channel(i,epoch_baseline,500,epoch_baseline.fs); 
+   [pwelch_MI_onechannel,freq]=pwelch_for_each_channel(i,epoch_MI,500,epoch_MI.fs); 
+   figure
+   plot(freq,10*log10(pwelch_bas_onechannel),)
+end    
 
-pwelch_baseline_avg{i}=mean(pwelch_baseline_1channel, 2);
+%% pwelch for MI
 
-plot(10*log10(pwelch_baseline_avg{1,i}));
-hold on;
-end
 
+for i=1:16
+   
+   figure
+   plot(freq,10*log10(pwelch_MI_onechannel))
+end 
 %% time filtering (non va pero')
 [b,a] = butter(2, [5 40]/512/2);
 filt_data=filter(b,a,session.data');
@@ -41,6 +45,7 @@ session_filt=session;
 session_filt.data=filt_data';
 filt_epoch_baseline=epoch_struct(session_filt,200,0,3);
 
+%%
 figure
 for i=1:16
 filt_pwelch_baseline_1channel=pwelch(filt_epoch_baseline.data(:,i,:), 0.5*filt_epoch_baseline.fs, 0.5*0.5*filt_epoch_baseline.fs);
@@ -74,7 +79,7 @@ MI=epoch_struct(session, 400, 0,3);
 
 
 for i=1:size(chanlocs16,2)
-[pwr_b, fre_b]=pwelch(squeeze(baseline.data(:,i,:)),0.5*session.fs,0.5*0.5*session.fs,500,session.fs);
+[pwr_b, fre_b]=pwelch(squeeze(epoch_baseline.data(:,i,:)),0.5*session.fs,0.5*0.5*session.fs,500,session.fs);
 
 plot(fre_b,10*log(pwr_b));%10log
 hold on
@@ -83,7 +88,7 @@ xlabel('frequencies');
 ylabel('spectral density');
 title('spectral density');
 end 
-
+%%
 for i=1:size(chanlocs16,2)
 [pwr_MI,fre_MI]=pwelch(squeeze(MI.data(:,i,:)),0.5*session.fs,0.5*0.5*session.fs,500,session.fs);
 plot(fre_MI,pwr_MI);

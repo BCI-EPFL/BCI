@@ -1,7 +1,7 @@
 clear;
 close;
 
-addpath(genpath('biosig\t200_FileAccess'));
+addpath(genpath('biosig'));
 addpath(genpath('folder_runs'));
 addpath(genpath('data'));
 addpath(genpath('eeglab13_4_4b'));
@@ -19,20 +19,18 @@ session.channels={chanlocs16.labels};
 session.Event_type=h.EVENT.TYP;
 session.Event_pos=h.EVENT.POS;
 
-
+%% pwelch
 epoch_baseline=epoch_struct(session,200,0,3);
+epoch_MI=epoch_struct(session,400,0,3);
 
-%% pwelch for each channel
-
-figure;
 for i=1:16
-pwelch_baseline_1channel=pwelch(epoch_baseline.data(:,i,:), 0.5*epoch_baseline.fs, 0.5*0.5*epoch_baseline.fs);
-
-pwelch_baseline_avg{i}=mean(pwelch_baseline_1channel, 2);
-
-plot(10*log10(pwelch_baseline_avg{1,i}));
-hold on;
-end
+   [pwelch_bas_onechannel,freq]=pwelch_for_each_channel(i,epoch_baseline,500,epoch_baseline.fs); 
+   [pwelch_MI_onechannel,freq]=pwelch_for_each_channel(i,epoch_MI,500,epoch_MI.fs); 
+   figure
+   plot(freq,10*log10(pwelch_bas_onechannel),freq,10*log10(pwelch_MI_onechannel))
+   xlabel('Frequency [Hz]');
+   ylabel('Power Spectral Density [dB]');
+end    
 
 %% time filtering (non va pero')
 [b,a] = butter(2, [5 40]/512/2);
