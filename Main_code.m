@@ -24,10 +24,10 @@ epoch_baseline=epoch_struct(session,200,0,3);
 epoch_MI=epoch_struct(session,400,0,3);
 
 for i=1:16
-   [pwelch_bas_onechannel,freq]=pwelch_for_each_channel(i,epoch_baseline,500,epoch_baseline.fs); 
-   [pwelch_MI_onechannel,freq]=pwelch_for_each_channel(i,epoch_MI,500,epoch_MI.fs); 
+   [pwelch_bas_onechannel,freq_1]=pwelch_for_each_channel(i,epoch_baseline,500,epoch_baseline.fs); 
+   [pwelch_MI_onechannel,freq_2]=pwelch_for_each_channel(i,epoch_MI,500,epoch_MI.fs); 
    figure
-   plot(freq,10*log10(pwelch_bas_onechannel),freq,10*log10(pwelch_MI_onechannel))
+   plot(freq_1,10*log10(pwelch_bas_onechannel),freq_2,10*log10(pwelch_MI_onechannel))
    xlabel('Frequency [Hz]');
    ylabel('Power Spectral Density [dB]');
 end    
