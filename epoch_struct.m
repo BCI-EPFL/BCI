@@ -1,4 +1,4 @@
-  function [ struct_epoch ] = epoch_struct( session,Align_Event,timebEvent,timeaEvent  )
+  function [ struct_epoch ] = epoch_struct( session,Align_Event,timebEvent,timeaEvent)
   
 % what in output in the struc
  s=(session.data)'; % to find---->
