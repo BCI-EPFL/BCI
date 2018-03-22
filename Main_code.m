@@ -36,9 +36,9 @@ end
 
 %% time filtering (non va pero')
 [b,a] = butter(2, [5 40]/512/2);
-filt_data=filter(b,a,session.data);
+filt_data=filter(b,a,session.data');
 session_filt=session;
-session_filt.data=filt_data;
+session_filt.data=filt_data';
 filt_epoch_baseline=epoch_struct(session_filt,200,0,3);
 
 figure
