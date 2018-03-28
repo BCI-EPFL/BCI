@@ -9,10 +9,10 @@ for i=1:size(thisEpoch1.data,3)-1
     
     power_avg_baseline = mean(p_baseline');
     
-    %power_ratio = power_ratio + p_MI./(power_avg_baseline');
-    power_ratio{i} = p_MI./(power_avg_baseline');
+    power_ratio  = power_ratio + p_MI./(power_avg_baseline');
+    
 end
 
-final_avg = sum(cat(3,power_ratio{:}),3)./size(thisEpoch1.data,3);
+final_avg = power_ratio./size(thisEpoch1.data,3);
 
 end

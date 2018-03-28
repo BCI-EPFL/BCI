@@ -90,17 +90,17 @@ plot(signal_car(:,9))
 
 %% spectrogram
 
-Cyclic_freq=500;
+Cyclic_freq=100;
 
 for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(epoch_baseline, epoch_MI, i, epoch_baseline.fs, epoch_baseline.fs-32, Cyclic_freq);
    
-   spect_tot(i,:,:)=spect_for_one_channel;
+  % spect_tot(i,:,:)=spect_for_one_channel;
    
-%    figure;
-%    imagesc(t,f, 10*log10(spect_for_one_channel)); 
-%     
+   figure;
+   imagesc(t,f, 10*log10(spect_for_one_channel)); 
+    
 end
 
 %% topoplot
