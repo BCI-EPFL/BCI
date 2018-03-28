@@ -60,27 +60,34 @@ end
 medium=mean(mean(s));
 signal_car=zeros(size(s,1),size(s,2));
 for i=1:size(s,2)-1
-    signal_car(:,i)=s(:,1)-medium;
+    signal_car(:,i)=s(:,i)-medium;
 end
 
 plot(signal_car(:,9))
 hold on
 plot(s(:,9))
 title ('car filter and raw signal');
-labels('CAR signal','raw signal');
+xlabel('CAR signal');
+ylabel('raw signal');
+%% laplacian filter
 
-%%laplacian filter
-laplacian=s(:,1:16)*lap;
+load('laplacian_16_10-20_mi.mat');
+
+% for i=1:size(s,2)-1
+%     signal_laplacian(:,i)= s(:,i) - lap*s(:,1:16);
+% end
+
+signal_laplacian = s(:,1:16)*lap;
+
 subplot(3,1,1)
 plot(s(:,9))
 subplot(3,1,2)
-plot(laplacian(:,9))
+plot(signal_laplacian(:,9))
 subplot(3,1,3)
 plot(signal_car(:,9))
   
 
-%topoplot
-
+%% spectrogram
 
 
 
