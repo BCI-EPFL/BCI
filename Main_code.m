@@ -5,7 +5,6 @@ addpath(genpath('biosig'));
 addpath(genpath('folder_runs'));
 addpath(genpath('data'));
 addpath(genpath('eeglab13_4_4b'));
-addpath(genpath('eeglab_current'));
 
 
 load('channel_location_16_10-20_mi');
@@ -91,23 +90,26 @@ plot(signal_car(:,9))
 
 %% spectrogram
 
-Cyclic_freq=[17 30];
+Cyclic_freq=500;
 
 for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(epoch_baseline, epoch_MI, i, epoch_baseline.fs, epoch_baseline.fs-32, Cyclic_freq);
    
-   x = eeg_topoplot('vals', 'chanlocs', 'key', 'val', spect_for_one_channel, 
+   spect_tot(i,:,:)=spect_for_one_channel;
    
-   figure;
-   imagesc(t,f, 10*log10(spect_for_one_channel)); 
-    
+%    figure;
+%    imagesc(t,f, 10*log10(spect_for_one_channel)); 
+%     
 end
 
 %% topoplot
 
+for i=1:32
+    figure;
+    topoplot(spect_tot(1,:,i),chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
 
-
+end
 
 
 
