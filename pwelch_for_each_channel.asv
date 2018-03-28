@@ -1,9 +1,0 @@
-function [pow, freq]=pwelch_for_each_channel(epoched_data,window,noverlap,f,fs)
-    pow=0;
-    freq=0;
-    for i=1:size(epoched_data.data,3)
-        [a,b]
-        pow=pow+a;
-    end
-    pow=pow/i;
-end

@@ -89,10 +89,13 @@ plot(signal_car(:,9))
 
 %% spectrogram
 
+Cyclic_freq=[250 250];
+
 for i=1:16
     
-   spect_for_one_channel=S
-    
+   [spect_for_one_channel,t, f]=Spectrogram_function(epoch_baseline, epoch_MI, i, epoch_baseline.fs, epoch_baseline.fs-32, Cyclic_freq);
+   figure;
+   imagesc(t,f, 10*log10(spect_for_one_channel)); 
     
 end
 

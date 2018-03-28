@@ -1,6 +1,5 @@
 function [final_avg, t, f] = Spectrogram_function(thisEpoch1, thisEpoch2,num_channel,win,noverlap,freq)
 
-
 power_ratio=zeros(251, 32);
 
 for i=1:size(thisEpoch1.data,3)-1
