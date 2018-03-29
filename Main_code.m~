@@ -31,8 +31,6 @@ for i=1:16
    plot(freq_1,10*log10(pwelch_bas_onechannel),freq_2,10*log10(pwelch_MI_onechannel))
    xlabel('Frequency [Hz]');
    ylabel('Power Spectral Density [dB]');
-   title(sprintf('spectral density for channels %s',epoch_baseline.channels{1,i}));
-   
 end    
 
 %% temporal filtering on the raw data
@@ -79,7 +77,7 @@ load('laplacian_16_10-20_mi.mat');
 %     signal_laplacian(:,i)= s(:,i) - lap*s(:,1:16);
 % end
 
-signal_laplacian = s(:,1:16)*lap; %change channel and sample rate
+signal_laplacian = s(:,1:16)*lap;
 
 subplot(3,1,1)
 plot(s(:,9))
@@ -91,7 +89,7 @@ plot(signal_car(:,9))
 
 %% spectrogram
 
-Cyclic_freq=[5:0.1:40];
+Cyclic_freq=100;
 
 for i=1:16
     
@@ -100,7 +98,7 @@ for i=1:16
   % spect_tot(i,:,:)=spect_for_one_channel;
    
    figure;
-   imagesc('XData',t,'YData',f,'CData', 10*log10(spect_for_one_channel)); % in order to put in line the ferquencies and teh time
+   imagesc(t,f, 10*log10(spect_for_one_channel)); 
     
 end
 
