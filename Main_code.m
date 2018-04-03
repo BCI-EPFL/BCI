@@ -22,9 +22,9 @@ session.Event_pos=h.EVENT.POS;
 
 %% pwelch
 epoch_baseline=epoch_struct(session,200,0,3);
-epoch_MI=epoch_struct(session,400,0,3);
+epoch_MI=epoch_struct(session,400,-2,8);
 
-for i=1:16
+for i=1:size(chanlocs16)
    [pwelch_bas_onechannel,freq_1]=pwelch_for_each_channel(i,epoch_baseline,500,epoch_baseline.fs); 
    [pwelch_MI_onechannel,freq_2]=pwelch_for_each_channel(i,epoch_MI,500,epoch_MI.fs); 
    figure
@@ -36,7 +36,7 @@ for i=1:16
 end    
 
 %% temporal filtering on the raw data
-[b,a]=butter(2,[5 40]/512/2); %bandpass
+[b,a]=butter(2,[5 40]/h.SampleRate/2); %bandpass
 data_filter=session.data;
 for i=1:size(chanlocs16,2)
     data=session.data(i,:);
@@ -47,7 +47,7 @@ session_filt=session;
 session_filt.data=data_filter;
 %session_filt.data(17,:)=zeros(1,length(session_filt.data(2,:)));
 filt_epoch_baseline=epoch_struct(session_filt,200,0,3);
-filt_epoch_MI=epoch_struct(session_filt,400,0,3);
+filt_epoch_MI=epoch_struct(session_filt,400,-2,8);
 
 for i=1:16
    [filt_pwelch_bas_onechannel,freq]=pwelch_for_each_channel(i,filt_epoch_baseline,500,filt_epoch_baseline.fs); 
@@ -59,16 +59,17 @@ for i=1:16
 end    
 
 %% spatial filtering on the raw data.CAR
-%medium=(mean(s));
+medium_channels=mean(s');
 signal_car=zeros(size(s,1),size(s,2));
- i=1:size(s,2)-1
-    signal_car(:,i)=s(:,i)-medium;
+ for i=1:size(s,1)
+    signal_car(i,:)=s(i,:)-medium_channels(1,i);
 
+ end
 
-plot(signal_car(:,9))
-hold on
 plot(s(:,9))
-title ('car filter and raw signal');
+hold on
+plot(signal_car(:,9)')
+title (sprintf('car filter and raw signal for the channel %d',9));
 xlabel('CAR signal');
 ylabel('raw signal');
 %% laplacian filter
@@ -101,19 +102,22 @@ for i=1:16
    
    figure;
    imagesc('XData',t,'YData',f,'CData', 10*log10(spect_for_one_channel)); % in order to put in line the ferquencies and teh time
-    
+    %caxis(-5 5)
 end
 
 %% topoplot
+spect_for_one_channel_top=zeros(16,1);
 
-for i=1:32
+for i=1:16
   
     [spect_for_one_channel,t, f]=Spectrogram_function(epoch_baseline, epoch_MI, i, epoch_baseline.fs, epoch_baseline.fs-32, Cyclic_freq);
-    figure;
-    topoplot(spect_tot(1,:,i),chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
-
+    
+         spect_for_one_channel_top(i)=mean(spect_for_one_channel(:,1));
+         
+   
 end
-
+    
+    topoplot(spect_for_one_channel_top,chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
 
 
 
