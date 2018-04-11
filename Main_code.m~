@@ -22,7 +22,7 @@ session.Event_pos=h.EVENT.POS;
 
 %% pwelch
 epoch_baseline=epoch_struct(session,200,0,3);
-epoch_MI=epoch_struct(session,400,0,3);
+epoch_MI=epoch_struct(session,400,-2,6);
 
 for i=1:size(chanlocs16,2)
    [pwelch_bas_onechannel{i},freq_1]=pwelch_for_each_channel(i,epoch_baseline,500,epoch_baseline.fs); 
@@ -75,6 +75,12 @@ plot(signal_car(:,9)')
 title (sprintf('car filter and raw signal for the channel %d',9));
 xlabel('CAR signal');
 ylabel('raw signal');
+
+session_filt_CAR=session;
+session_filt_CAR.data=signal_car';
+filt_epoch_baseline_CAR=epoch_struct(session_filt_CAR,200,0,3);
+filt_epoch_MI_CAR=epoch_struct(session_filt_CAR,400,-2,6);
+
 %% laplacian filter
 
 load('laplacian_16_10-20_mi.mat');
@@ -105,14 +111,42 @@ for i=1:16
    
    figure;
    imagesc('XData',t,'YData',f,'CData', 10*log10(spect_for_one_channel)); % in order to put in line the ferquencies and teh time
-    %caxis(-5 5)
+    %caxis([-5 5]);
    xlabel('time[s]');
    ylabel('frequency[Hz]');
    title((sprintf('Spectogram on raw signal for the channel %s',epoch_baseline.channels{1,i})));
 end
 
 
-%% spectogram
+%% spectogram_CAR
+for i=1:16
+    
+   [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_CAR, filt_epoch_MI_CAR, i, filt_epoch_baseline_CAR.fs, filt_epoch_baseline_CAR.fs-32, Cyclic_freq);
+   
+  % spect_tot(i,:,:)=spect_for_one_channel;
+   
+   figure;
+   imagesc('XData',t,'YData',f,'CData', 10*log10(spect_for_one_channel)); % in order to put in line the ferquencies and teh time
+    caxis([-5 5])
+   xlabel('time[s]');
+   ylabel('frequency[Hz]');
+   title((sprintf('Spectrogram on CAR signal for the channel %s',epoch_baseline.channels{1,i})));
+end
+
+%% spectrogram_Laplacian 
+for i=1:16
+    
+   [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_CAR, filt_epoch_MI_CAR, i, filt_epoch_baseline_CAR.fs, filt_epoch_baseline_CAR.fs-32, Cyclic_freq);
+   
+  % spect_tot(i,:,:)=spect_for_one_channel;
+   
+   figure;
+   imagesc('XData',t,'YData',f,'CData', 10*log10(spect_for_one_channel)); % in order to put in line the ferquencies and teh time
+    caxis([-5 5])
+   xlabel('time[s]');
+   ylabel('frequency[Hz]');
+   title((sprintf('Spectrogram on CAR signal for the channel %s',epoch_baseline.channels{1,i})));
+end
 %% topoplot
 spect_for_one_channel_top=zeros(16,1);
 
