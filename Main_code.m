@@ -22,9 +22,9 @@ session.Event_pos=h.EVENT.POS;
 
 %% pwelch
 epoch_baseline=epoch_struct(session,200,0,3);
-epoch_MI=epoch_struct(session,400,-2,8);
+epoch_MI=epoch_struct(session,400,0,3);
 
-for i=1:size(chanlocs16)
+for i=1:size(chanlocs16,2)
    [pwelch_bas_onechannel,freq_1]=pwelch_for_each_channel(i,epoch_baseline,500,epoch_baseline.fs); 
    [pwelch_MI_onechannel,freq_2]=pwelch_for_each_channel(i,epoch_MI,500,epoch_MI.fs); 
    figure
@@ -32,11 +32,11 @@ for i=1:size(chanlocs16)
    xlabel('Frequency [Hz]');
    ylabel('Power Spectral Density [dB]');
    title(sprintf('spectral density for channels %s',epoch_baseline.channels{1,i}));
-   
+   legend('baseline','MI'),
 end    
 
 %% temporal filtering on the raw data
-[b,a]=butter(2,[5 40]/h.SampleRate/2); %bandpass
+[b,a]=butter(2,[5 40]/session.fs/2); %bandpass
 data_filter=session.data;
 for i=1:size(chanlocs16,2)
     data=session.data(i,:);
@@ -47,9 +47,9 @@ session_filt=session;
 session_filt.data=data_filter;
 %session_filt.data(17,:)=zeros(1,length(session_filt.data(2,:)));
 filt_epoch_baseline=epoch_struct(session_filt,200,0,3);
-filt_epoch_MI=epoch_struct(session_filt,400,-2,8);
+filt_epoch_MI=epoch_struct(session_filt,400,0,3);
 
-for i=1:16
+for i=1:size(chanlocs16,2)
    [filt_pwelch_bas_onechannel,freq]=pwelch_for_each_channel(i,filt_epoch_baseline,500,filt_epoch_baseline.fs); 
    [filt_pwelch_MI_onechannel,freq]=pwelch_for_each_channel(i,filt_epoch_MI,500,filt_epoch_MI.fs); 
    figure
@@ -92,7 +92,7 @@ plot(signal_car(:,9))
 
 %% spectrogram
 
-Cyclic_freq=[5:0.1:40];
+Cyclic_freq=[12:0.1:30];
 
 for i=1:16
     
@@ -117,7 +117,7 @@ for i=1:16
    
 end
     
-    topoplot(spect_for_one_channel_top,chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
+    topoplot(spect_for_one_channel_top(1),chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
 
 
 
