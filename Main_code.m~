@@ -57,7 +57,8 @@ for i=1:size(chanlocs16,2)
    xlabel('Frequency [Hz]');
    ylabel('Power Spectral Density [dB]');
    legend('Raw data baseline','Raw data MI','Filtered baseline','Filtered MI');
-   title(
+   legend('Location','best');
+   title(sprintf('Comparison pwelch for channels %s',epoch_baseline.channels{1,i}));
 end    
 
 %% spatial filtering on the raw data.CAR
@@ -105,8 +106,13 @@ for i=1:16
    figure;
    imagesc('XData',t,'YData',f,'CData', 10*log10(spect_for_one_channel)); % in order to put in line the ferquencies and teh time
     %caxis(-5 5)
+   xlabel('time[s]');
+   ylabel('frequency[Hz]');
+   title((sprintf('Spectogram on raw signal for the channel %s',epoch_baseline.channels{1,i})));
 end
 
+
+%% spectogram
 %% topoplot
 spect_for_one_channel_top=zeros(16,1);
 
