@@ -57,8 +57,7 @@ for i=1:size(chanlocs16,2)
    xlabel('Frequency [Hz]');
    ylabel('Power Spectral Density [dB]');
    legend('Raw data baseline','Raw data MI','Filtered baseline','Filtered MI');
-   legend('Location','best');
-   title(sprintf('Comparison pwelch for channels %s',epoch_baseline.channels{1,i}));
+   title(
 end    
 
 %% spatial filtering on the raw data.CAR
