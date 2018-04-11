@@ -97,7 +97,11 @@ subplot(3,1,2)
 plot(signal_laplacian(:,9))
 subplot(3,1,3)
 plot(signal_car(:,9))
-  
+
+session_filt_lap=session;
+session_filt_lap.data=signal_laplacian';
+filt_epoch_baseline_lap=epoch_struct(session_filt_lap,200,0,3);
+filt_epoch_MI_lap=epoch_struct(session_filt_lap,400,-2,6);
 
 %% spectrogram
 
@@ -136,7 +140,7 @@ end
 %% spectrogram_Laplacian 
 for i=1:16
     
-   [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_CAR, filt_epoch_MI_CAR, i, filt_epoch_baseline_CAR.fs, filt_epoch_baseline_CAR.fs-32, Cyclic_freq);
+   [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_lap, filt_epoch_MI_lap, i, filt_epoch_baseline_lap.fs, filt_epoch_baseline_lap.fs-32, Cyclic_freq);
    
   % spect_tot(i,:,:)=spect_for_one_channel;
    
