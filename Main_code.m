@@ -149,7 +149,7 @@ for i=1:16
     caxis([-5 5])
    xlabel('time[s]');
    ylabel('frequency[Hz]');
-   title((sprintf('Spectrogram on CAR signal for the channel %s',epoch_baseline.channels{1,i})));
+   title((sprintf('Spectrogram on Laplacian signal for the channel %s',epoch_baseline.channels{1,i})));
 end
 %% topoplot
 spect_for_one_channel_top=zeros(16,1);
