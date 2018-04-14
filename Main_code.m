@@ -151,7 +151,7 @@ for i=1:16
    ylabel('frequency[Hz]');
    h=colorbar;
    set(h,'ylim',[-5 5]);
-   title((sprintf('Spectogram raw for the channel %s for MI initiation',epoch_baseline.channels{1,i})));
+   title((sprintf('Spect raw channel %s for MI initiation',epoch_baseline.channels{1,i})));
 end
 
 %% spectrogram_motor_imagenery_termination
@@ -167,7 +167,7 @@ for i=1:16
    ylabel('frequency[Hz]');
    h=colorbar;
    set(h,'ylim',[-5 5]);
-   title((sprintf('Spectogram raw for the channel %s for MI termination',epoch_baseline.channels{1,i})));
+   title((sprintf('Spect raw channel %s for MI termination',epoch_baseline.channels{1,i})));
 end
 
 
@@ -176,81 +176,175 @@ end
 for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_CAR, filt_epoch_MI_CAR, i, filt_epoch_baseline_CAR.fs, filt_epoch_baseline_CAR.fs-32, Cyclic_freq);
-   figure;
-   imagesc('XData',t,'YData',f,'CData', 10*log10(spect_for_one_channel)); % in order to put in line the ferquencies and teh time
-   caxis([-5 5]);
+   subplot(4,4,i)
+   imagesc('XData',t,'YData',f,'CData', 10*log10(spect_for_one_channel)); 
+   axis tight
+   xlabel('time[s]');
+   ylabel('frequency[Hz]');
+   h=colorbar;
+   set(h,'ylim',[-5 5]);
+   title((sprintf('Spectrogram on CAR signal for the channel %s',epoch_baseline.channels{1,i})));
+   
+end
+%% spectogram_CAR_motor_imagery_termination
+for i=1:16
+    
+   [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_CAR, filt_epoch_MI_CAR_termination, i, filt_epoch_baseline_CAR.fs, filt_epoch_baseline_CAR.fs-32, Cyclic_freq);
+   subplot(4,4,i);
+   imagesc('XData',t,'YData',f,'CData', 10*log10(spect_for_one_channel));
+   axis tight
+   h=colorbar;
+   set(h,'ylim',[-5 5]);
    xlabel('time[s]');
    ylabel('frequency[Hz]');
    title((sprintf('Spectrogram on CAR signal for the channel %s',epoch_baseline.channels{1,i})));
    
 end
-%% spectogram_CAR_motor_imagery_termination
-
 
 %% spectrogram_Laplacian_motor_imagery_initiation
 for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_lap, filt_epoch_MI_lap, i, filt_epoch_baseline_lap.fs, filt_epoch_baseline_lap.fs-32, Cyclic_freq);
-   figure;
+   subplot(4,4,i)
    imagesc('XData',t,'YData',f,'CData', 10*log10(spect_for_one_channel)); % in order to put in line the ferquencies and teh time
-   caxis([-5 5]);
+   axis tight
+   h=colorbar;
+   set(h,'ylim',[-5 5]);
    xlabel('time[s]');
    ylabel('frequency[Hz]');
-   title((sprintf('Spectrogram on Laplacian signal for the channel %s',epoch_baseline.channels{1,i})));
+   title((sprintf('Spect on Lap signal for channel %s',epoch_baseline.channels{1,i})));
 end
 %% spectrogram_Laplacian_motor_imagery_termination
-
+for i=1:16
+    
+   [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_lap, filt_epoch_MI_lap_termination, i, filt_epoch_baseline_lap.fs, filt_epoch_baseline_lap.fs-32, Cyclic_freq);
+   subplot(4,4,i)
+   imagesc('XData',t,'YData',f,'CData', 10*log10(spect_for_one_channel)); % in order to put in line the ferquencies and teh time
+   axis tight
+   h=colorbar;
+   set(h,'ylim',[-5 5]);
+   xlabel('time[s]');
+   ylabel('frequency[Hz]');
+   title((sprintf('Spect on Lap signal for channel %s',epoch_baseline.channels{1,i})));
+end
 
 %% topoplot_raw data_fre:8-12;
-spect_for_one_channel_top=zeros(16,1);
+spect_for_one_channel_top=zeros(16,113); % 113 is the size of the time
 Cyclic_freq2=[8:0.1:12];
 for i=1:16
   
     [spect_for_one_channel,t, f]=Spectrogram_function(epoch_baseline, epoch_MI, i, epoch_baseline.fs, epoch_baseline.fs-32, Cyclic_freq2);
+    for j=1:113
     
-         spect_for_one_channel_top(i)=mean(spect_for_one_channel(:,1));
+         spect_for_one_channel_top(i,j)=mean(10*log10(spect_for_one_channel(:,j)));
          
-   
+    end
 end
+    figure
+    for j=1:9
+        subplot(3,3,j)
+        topoplot(spect_for_one_channel_top(:,1+13*(j-1)),chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
+        title(sprintf('time : %.2f ',t(1+13*(j-1))));
+    end
+%     a=axes;
+%     t1=title('Topoplot raw data,alpha band');
+%     a.Visible='off';
+%     t1.Visible='on';
+%% topoplotraw data_fre:13-25;
+Cyclic_freq2=[13:0.1:25];
+spect_for_one_channel_top=zeros(16,113);
+for i=1:16
+  
+    [spect_for_one_channel,t, f]=Spectrogram_function(epoch_baseline, epoch_MI, i, epoch_baseline.fs, epoch_baseline.fs-32, Cyclic_freq2);
+    for j=1:113
+         spect_for_one_channel_top(i,j)=mean(10*log10(spect_for_one_channel(:,j)));
+         
+    end
+end
+    figure;
     
-    topoplot(spect_for_one_channel_top,chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
-
-%% topoplot_raw data_fre:13-25;
-
+    for j=1:9
+        subplot(3,3,j)
+        topoplot(spect_for_one_channel_top(:,1+13*(j-1)),chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
+        title(sprintf('time : %.2f ',t(1+13*(j-1))));
+    end
 %% topoplot_car_fre:8-12;
 
+Cyclic_freq2=[8:0.1:12];
 spect_for_one_channel_top=zeros(16,1);
 
 for i=1:16
   
-    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_lap, filt_epoch_MI_lap, i, filt_epoch_baseline_lap.fs, filt_epoch_baseline_lap.fs-32, Cyclic_freq);
-    
-         spect_for_one_channel_top(i)=mean(spect_for_one_channel(:,1));
+    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_CAR, filt_epoch_MI_CAR, i, filt_epoch_baseline_CAR.fs, filt_epoch_baseline_CAR.fs-32, Cyclic_freq);
+    for j=1:size(t,2)
+         spect_for_one_channel_top(i,j)=mean(10*log10(spect_for_one_channel(:,j)));
          
-   
+    end 
 end
     
-    topoplot(spect_for_one_channel_top,chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
-
+    for j=1:9
+        subplot(3,3,j)
+        topoplot(spect_for_one_channel_top(:,1+13*(j-1)),chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
+        title(sprintf('time : %.2f ',t(1+13*(j-1))));
+    end
 
 
 %% topoplot_car_fre:13-25;
 
-
-
-%% topoplot laplacian_fre:8-12;
+Cyclic_freq2=[13:0.1:25];
 spect_for_one_channel_top=zeros(16,1);
 
 for i=1:16
   
-    [spect_for_one_channel,t, f]=Spectrogram_function(epoch_baseline, epoch_MI, i, epoch_baseline.fs, epoch_baseline.fs-32, Cyclic_freq);
-    
-         spect_for_one_channel_top(i)=mean(spect_for_one_channel(:,1));
+    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_CAR, filt_epoch_MI_CAR, i, filt_epoch_baseline_CAR.fs, filt_epoch_baseline_CAR.fs-32, Cyclic_freq);
+    for j=1:size(t,2)
+        
+         spect_for_one_channel_top(i,j)=mean(10*log10(spect_for_one_channel(:,j)));
          
-   
+    end
 end
     
-    topoplot(spect_for_one_channel_top,chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
+   for j=1:9
+        subplot(3,3,j)
+        topoplot(spect_for_one_channel_top(:,1+13*(j-1)),chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
+        title(sprintf('time : %.2f ',t(1+13*(j-1))));
+    end
+%% topoplot laplacian_fre:8-12;
+spect_for_one_channel_top=zeros(16,1);
+Cyclic_freq2=[8:0.1:12];
+
+for i=1:16
+  
+    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_lap, filt_epoch_MI_lap, i,filt_epoch_baseline_lap.fs, filt_epoch_baseline_lap.fs-32, Cyclic_freq);
+    
+    for j=1:size(t,2)
+         spect_for_one_channel_top(i,j)=mean(10*log10(spect_for_one_channel(:,j)));
+         
+    end
+end
+    
+     for j=1:9
+        subplot(3,3,j)
+        topoplot(spect_for_one_channel_top(:,1+13*(j-1)),chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
+        title(sprintf('time : %.2f ',t(1+13*(j-1))));
+    end
 
 
 %% topoplot laplacian_fre:13-25
+spect_for_one_channel_top=zeros(16,1);
+Cyclic_freq2=[13:0.1:25];
+
+for i=1:16
+  
+    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_lap, filt_epoch_MI_lap, i,filt_epoch_baseline_lap.fs, filt_epoch_baseline_lap.fs-32, Cyclic_freq);
+    for j=1:size(t,2)
+         spect_for_one_channel_top(i,j)=mean(10*log10(spect_for_one_channel(:,j)));
+         
+    end
+end
+    
+  for j=1:9
+        subplot(3,3,j)
+        topoplot(spect_for_one_channel_top(:,1+13*(j-1)),chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
+        title(sprintf('time : %.2f ',t(1+13*(j-1))));
+    end
