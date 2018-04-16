@@ -137,10 +137,12 @@ session_filt_lap.data=signal_laplacian';
 filt_epoch_baseline_lap=epoch_struct(session_filt_lap,200,0,3);
 filt_epoch_MI_lap=epoch_struct(session_filt_lap,400,-2,6);
 filt_epoch_MI_lap_termination=epoch_struct(session_filt_lap,555,-3,3);
-%% spectrogram_motor_imagenery_initiation
+
+%% Spectrogram MI initiation
 
 Cyclic_freq=[5:0.1:40];
 
+figure
 for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(epoch_baseline, epoch_MI, i, epoch_baseline.fs, epoch_baseline.fs-32, Cyclic_freq);
@@ -151,12 +153,15 @@ for i=1:16
    ylabel('frequency[Hz]');
    h=colorbar;
    set(h,'ylim',[-5 5]);
-   title((sprintf('Spect raw channel %s for MI initiation',epoch_baseline.channels{1,i})));
+   title((sprintf('Channel %s',epoch_baseline.channels{1,i})));
 end
+suptitle('Spectrogram raw data - MI initiation')
 
-%% spectrogram_motor_imagenery_termination
+
+%% Spectrogram MI termination
 Cyclic_freq=[5:0.1:40];
 
+figure
 for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(epoch_baseline, epoch_MI_termination, i, epoch_baseline.fs, epoch_baseline.fs-32, Cyclic_freq);
@@ -167,12 +172,14 @@ for i=1:16
    ylabel('frequency[Hz]');
    h=colorbar;
    set(h,'ylim',[-5 5]);
-   title((sprintf('Spect raw channel %s for MI termination',epoch_baseline.channels{1,i})));
+   title((sprintf('Channel %s',epoch_baseline.channels{1,i})));
 end
+suptitle('Spectrogram raw data - MI termination')
 
 
+%% Spectogram CAR MI initiation
 
-%% spectogram_CAR_motor_imagery_initiation
+figure
 for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_CAR, filt_epoch_MI_CAR, i, filt_epoch_baseline_CAR.fs, filt_epoch_baseline_CAR.fs-32, Cyclic_freq);
@@ -183,10 +190,15 @@ for i=1:16
    ylabel('frequency[Hz]');
    h=colorbar;
    set(h,'ylim',[-5 5]);
-   title((sprintf('Spectrogram on CAR signal for the channel %s',epoch_baseline.channels{1,i})));
-   
+   title((sprintf('Channel %s',epoch_baseline.channels{1,i})));
+  
 end
-%% spectogram_CAR_motor_imagery_termination
+
+suptitle('Spectrogram CAR filtered data - MI initiation')
+
+%% Spectogram CAR MI termination
+
+figure
 for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_CAR, filt_epoch_MI_CAR_termination, i, filt_epoch_baseline_CAR.fs, filt_epoch_baseline_CAR.fs-32, Cyclic_freq);
@@ -197,11 +209,15 @@ for i=1:16
    set(h,'ylim',[-5 5]);
    xlabel('time[s]');
    ylabel('frequency[Hz]');
-   title((sprintf('Spectrogram on CAR signal for the channel %s',epoch_baseline.channels{1,i})));
+   title((sprintf('Channel %s',epoch_baseline.channels{1,i})));
    
 end
+suptitle('Spectrogram CAR filtered data - MI termination')
 
-%% spectrogram_Laplacian_motor_imagery_initiation
+
+%% Spectrogram Laplacian MI initiation
+
+figure
 for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_lap, filt_epoch_MI_lap, i, filt_epoch_baseline_lap.fs, filt_epoch_baseline_lap.fs-32, Cyclic_freq);
@@ -212,9 +228,13 @@ for i=1:16
    set(h,'ylim',[-5 5]);
    xlabel('time[s]');
    ylabel('frequency[Hz]');
-   title((sprintf('Spect on Lap signal for channel %s',epoch_baseline.channels{1,i})));
+   title((sprintf('Channel %s',epoch_baseline.channels{1,i})));
 end
-%% spectrogram_Laplacian_motor_imagery_termination
+suptitle('Spectrogram Laplacian filtered data - MI initiation')
+
+%% Spectrogram Laplacian MI termination
+
+figure
 for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_lap, filt_epoch_MI_lap_termination, i, filt_epoch_baseline_lap.fs, filt_epoch_baseline_lap.fs-32, Cyclic_freq);
@@ -225,8 +245,9 @@ for i=1:16
    set(h,'ylim',[-5 5]);
    xlabel('time[s]');
    ylabel('frequency[Hz]');
-   title((sprintf('Spect on Lap signal for channel %s',epoch_baseline.channels{1,i})));
+   title((sprintf('Channel %s',epoch_baseline.channels{1,i})));
 end
+suptitle('Spectrogram Laplacian filtered data - MI termination')
 
 %% topoplot_raw data_fre:8-12;
 spect_for_one_channel_top=zeros(16,113); % 113 is the size of the time
@@ -240,16 +261,15 @@ for i=1:16
          
     end
 end
+
     figure
     for j=1:9
         subplot(3,3,j)
         topoplot(spect_for_one_channel_top(:,1+13*(j-1)),chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
         title(sprintf('time : %.2f ',t(1+13*(j-1))));
     end
-%     a=axes;
-%     t1=title('Topoplot raw data,alpha band');
-%     a.Visible='off';
-%     t1.Visible='on';
+    suptitle('Topoplot raw data - alpha band');
+    
 %% topoplotraw data_fre:13-25;
 Cyclic_freq2=[13:0.1:25];
 spect_for_one_channel_top=zeros(16,113);
@@ -261,13 +281,15 @@ for i=1:16
          
     end
 end
+
     figure;
-    
     for j=1:9
         subplot(3,3,j)
         topoplot(spect_for_one_channel_top(:,1+13*(j-1)),chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
         title(sprintf('time : %.2f ',t(1+13*(j-1))));
     end
+    suptitle('Topoplot raw data - beta band');
+    
 %% topoplot_car_fre:8-12;
 
 Cyclic_freq2=[8:0.1:12];
@@ -282,12 +304,13 @@ for i=1:16
     end 
 end
     
+    figure
     for j=1:9
         subplot(3,3,j)
         topoplot(spect_for_one_channel_top(:,1+13*(j-1)),chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
         title(sprintf('time : %.2f ',t(1+13*(j-1))));
     end
-
+    suptitle('Topoplot CAR filtered data - alpha band');
 
 %% topoplot_car_fre:13-25;
 
@@ -304,11 +327,14 @@ for i=1:16
     end
 end
     
+   figure
    for j=1:9
         subplot(3,3,j)
         topoplot(spect_for_one_channel_top(:,1+13*(j-1)),chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
         title(sprintf('time : %.2f ',t(1+13*(j-1))));
-    end
+   end
+   suptitle('Topoplot CAR filtered data - beta band'); 
+   
 %% topoplot laplacian_fre:8-12;
 spect_for_one_channel_top=zeros(16,1);
 Cyclic_freq2=[8:0.1:12];
@@ -322,13 +348,14 @@ for i=1:16
          
     end
 end
-    
-     for j=1:9
+       
+    figure
+    for j=1:9
         subplot(3,3,j)
         topoplot(spect_for_one_channel_top(:,1+13*(j-1)),chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
         title(sprintf('time : %.2f ',t(1+13*(j-1))));
     end
-
+    suptitle('Topoplot Laplacian filtered data - alpha band');
 
 %% topoplot laplacian_fre:13-25
 spect_for_one_channel_top=zeros(16,1);
@@ -342,9 +369,11 @@ for i=1:16
          
     end
 end
-    
-  for j=1:9
+  
+    figure
+    for j=1:9
         subplot(3,3,j)
         topoplot(spect_for_one_channel_top(:,1+13*(j-1)),chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
         title(sprintf('time : %.2f ',t(1+13*(j-1))));
     end
+    suptitle('Topoplot Laplacian filtered data - beta band');
