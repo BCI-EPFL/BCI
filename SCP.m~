@@ -35,8 +35,12 @@ session.Event_pos=cat(1,session.Event_pos,h.EVENT.POS);
 % [s, h]= sload(filename);
 % session.data=cat(2,session.data,s');
 
-%%filter butter
 
+
+session.data=session.data(1:16,:); % we delete the last channels 17
+
+
+%% filter butter
 [b,a]=butter(2,[0.1 3]/session.fs/2); %bandpass
 data_filter=session.data;
 for i=1:size(chanlocs16,2)
@@ -45,7 +49,7 @@ for i=1:size(chanlocs16,2)
 end 
 
 
-%%car filter
+%% car filter
 
 medium_channels=mean(data_filter);
 signal_car=zeros(size(data_filter',1),size(data_filter',2));
@@ -55,7 +59,18 @@ signal_car=zeros(size(data_filter',1),size(data_filter',2));
     signal_car(i,:)=data_filter(:,i)'-medium_channels(1,i);
 
  end
- signal_car=signal_car(
- %%plottopo
- plottopo(signal_car',chanlocs16);
+
+
+epoch_MI=epoch_struct(session,400,-3,0);
+
+    
+for i=1:size(epoch_MI.data,3)
+    
+    c(:,:,i)=epoch_MI.data(:,:,i)';
+end
+   
+c2=mean(c,3);
+
+ %% plottopo
+ plottopo(c2,chanlocs16);
  

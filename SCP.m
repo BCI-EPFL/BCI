@@ -60,7 +60,17 @@ signal_car=zeros(size(data_filter',1),size(data_filter',2));
 
  end
 
- 
+
+epoch_MI=epoch_struct(session,400,-5,5);
+
+    
+for i=1:size(epoch_MI.data,3)
+    
+    c(:,:,i)=epoch_MI.data(:,:,i)';
+end
+   
+c2=mean(c,3);
+
  %% plottopo
- plottopo(signal_car',chanlocs16);
+ plottopo(c2,chanlocs16);
  
