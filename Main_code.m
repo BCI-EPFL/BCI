@@ -9,7 +9,7 @@ addpath(genpath('eeglab13_4_4b'));
 
 load('channel_location_16_10-20_mi');
 
-filename = 's_run1_offlineMIterm_20180703154501.gdf';
+filename = 'ak6_run2_offlineMIterm_20181603160414';
 [s, h]= sload(filename);
 
 
