@@ -76,26 +76,41 @@ c2=mean(c,3);
  
  %% DECODER 
  
- TrainingData.data=cat(3, epoch_baseline.data(:,:,1:30), epoch_MI.data(:,:,1:30));
- TrainingData.labels=cat(1, epoch_baseline.Event_type(1:30), epoch_MI.Event_type(1:30));
+ EpochTraining.data=cat(3, epoch_baseline.data(:,:,1:30), epoch_MI.data(:,:,1:30));
+ EpochTraining.labels=cat(1, epoch_baseline.Event_type(1:30), epoch_MI.Event_type(1:30));
  
- TestingData.data=cat(3, epoch_baseline.data(:,:,31:60), epoch_MI.data(:,:,31:60));
- TestingData.labels=cat(1, epoch_baseline.Event_type(31:60), epoch_MI.Event_type(31:60));
+ EpochTesting.data=cat(3, epoch_baseline.data(:,:,31:60), epoch_MI.data(:,:,31:60));
+ EpochTesting.labels=cat(1, epoch_baseline.Event_type(31:60), epoch_MI.Event_type(31:60));
  
  for i=1:size(chanlocs16,2)
-   [PwelchTrainingOnechannel{i},freq_1]=pwelch_for_each_channel(i,epoch_baseline,500,epoch_baseline.fs); 
-   [PwelchTestingOnechannel{i},freq_2]=pwelch_for_each_channel(i,epoch_MI,500,epoch_MI.fs); 
+   [PwelchTrainingOnechannel{i},freq_1]=pwelch_decoder(i,epoch_baseline,[4:2:40],epoch_baseline.fs); 
+   [PwelchTestingOnechannel{i},freq_2]=pwelch_decoder(i,epoch_MI,[4:2:40],epoch_MI.fs); 
    
-   subplot(4,4,i)
-   plot(freq_1(1:55),10*log10(pwelch_bas_onechannel{i}(1:55)),freq_2(1:55),10*log10(pwelch_MI_onechannel{i}(1:55)))
-   xlabel('Frequency [Hz]');
-   ylabel('PSD [dB]');
-   title(sprintf('spectral density for channels %s',epoch_baseline.channels{1,i}));
-   legend('baseline','MI');
-end 
+%    subplot(4,4,i)
+%    plot(freq_1(1:55),10*log10(pwelch_bas_onechannel{i}(1:55)),freq_2(1:55),10*log10(pwelch_MI_onechannel{i}(1:55)))
+%    xlabel('Frequency [Hz]');
+%    ylabel('PSD [dB]');
+%    title(sprintf('spectral density for channels %s',epoch_baseline.channels{1,i}));
+%    legend('baseline','MI');
+ end 
  
- 
- 
+% TAGLIARE FROM 4 to 40 Hz
+% interset function to cut at the right 
+
+TrainingData=zeros(60, 19*16);
+TestingData=zeros(60, 19*16);
+
+for i=1:60
+    
+    a=[];
+    for j=1:16
+        
+    TrainingData(i,1:(19*j))=cat(2,a,cell2mat(PwelchTrainingOnechannel{1,i}{1,j}));
+    a=TrainingData(i,1:(19*j));
+        
+    end
+    
+end
  
  
  
