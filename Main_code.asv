@@ -9,7 +9,7 @@ addpath(genpath('eeglab13_4_4b'));
 
 load('channel_location_16_10-20_mi');
 
-filename = 's_run1_offlineMIterm_20180703154501.gdf';
+filename = 'ak6_run2_offlineMIterm_20181603160414.gdf';
 [s, h]= sload(filename);
 
 
@@ -137,22 +137,26 @@ session_filt_lap.data=signal_laplacian';
 filt_epoch_baseline_lap=epoch_struct(session_filt_lap,200,0,3);
 filt_epoch_MI_lap=epoch_struct(session_filt_lap,400,-2,6);
 filt_epoch_MI_lap_termination=epoch_struct(session_filt_lap,555,-3,3);
-%% spectrogram_motor_imagenery_initiation
+
+%% Spectrogram MI initiation
 
 Cyclic_freq=[5:0.1:40];
 
+figure
 for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(epoch_baseline, epoch_MI, i, epoch_baseline.fs, epoch_baseline.fs-32, Cyclic_freq);
    subplot(4,4,i)
-   imagesc('XData',t,'YData',f, 'CData',10*log10(spect_for_one_channel)); 
+   imagesc('XData',t,'YData',f, 'CData',10*log(spect_for_one_channel)); 
    axis tight
    xlabel('time[s]');
    ylabel('frequency[Hz]');
    h=colorbar;
    set(h,'ylim',[-5 5]);
-   title((sprintf('Spect raw channel %s for MI initiation',epoch_baseline.channels{1,i})));
+   title((sprintf('Channel %s',epoch_baseline.channels{1,i})));
 end
+suptitle('Spectrogram raw data - MI initiation')
+
 
 %% Spectrogram MI termination
 Cyclic_freq=[5:0.1:40];
@@ -162,7 +166,7 @@ for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(epoch_baseline, epoch_MI_termination, i, epoch_baseline.fs, epoch_baseline.fs-32, Cyclic_freq);
    subplot(4,4,i)
-   imagesc('XData',t,'YData',f, 'CData',10*log10(spect_for_one_channel)); 
+   imagesc('XData',t,'YData',f, 'CData',10*log(spect_for_one_channel)); 
    axis tight
    xlabel('time[s]');
    ylabel('frequency[Hz]');
@@ -180,7 +184,7 @@ for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_CAR, filt_epoch_MI_CAR, i, filt_epoch_baseline_CAR.fs, filt_epoch_baseline_CAR.fs-32, Cyclic_freq);
    subplot(4,4,i)
-   imagesc('XData',t,'YData',f,'CData', 10*log10(spect_for_one_channel)); 
+   imagesc('XData',t,'YData',f,'CData', 10*log(spect_for_one_channel)); 
    axis tight
    xlabel('time[s]');
    ylabel('frequency[Hz]');
@@ -192,39 +196,45 @@ end
 
 suptitle('Spectrogram CAR filtered data - MI initiation')
 
-%% spectogram_CAR_motor_imagery_termination
+%% Spectogram CAR MI termination
 
 figure
 for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_CAR, filt_epoch_MI_CAR_termination, i, filt_epoch_baseline_CAR.fs, filt_epoch_baseline_CAR.fs-32, Cyclic_freq);
    subplot(4,4,i);
-   imagesc('XData',t,'YData',f,'CData', 10*log10(spect_for_one_channel));
+   imagesc('XData',t,'YData',f,'CData', 10*log(spect_for_one_channel));
    axis tight
    h=colorbar;
    set(h,'ylim',[-5 5]);
    xlabel('time[s]');
    ylabel('frequency[Hz]');
-   title((sprintf('Spectrogram on CAR signal for the channel %s',epoch_baseline.channels{1,i})));
+   title((sprintf('Channel %s',epoch_baseline.channels{1,i})));
    
 end
 suptitle('Spectrogram CAR filtered data - MI termination')
 
 
-%% spectrogram_Laplacian_motor_imagery_initiation
+%% Spectrogram Laplacian MI initiation
+
+figure
 for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_lap, filt_epoch_MI_lap, i, filt_epoch_baseline_lap.fs, filt_epoch_baseline_lap.fs-32, Cyclic_freq);
    subplot(4,4,i)
-   imagesc('XData',t,'YData',f,'CData', 10*log10(spect_for_one_channel)); % in order to put in line the ferquencies and teh time
+   imagesc('XData',t,'YData',f,'CData', 10*log(spect_for_one_channel)); % in order to put in line the ferquencies and teh time
    axis tight
    h=colorbar;
    set(h,'ylim',[-5 5]);
    xlabel('time[s]');
    ylabel('frequency[Hz]');
-   title((sprintf('Spect on Lap signal for channel %s',epoch_baseline.channels{1,i})));
+   title((sprintf('Channel %s',epoch_baseline.channels{1,i})));
 end
-%% spectrogram_Laplacian_motor_imagery_termination
+suptitle('Spectrogram Laplacian filtered data - MI initiation')
+
+%% Spectrogram Laplacian MI termination
+
+figure
 for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_lap, filt_epoch_MI_lap_termination, i, filt_epoch_baseline_lap.fs, filt_epoch_baseline_lap.fs-32, Cyclic_freq);
@@ -235,8 +245,9 @@ for i=1:16
    set(h,'ylim',[-5 5]);
    xlabel('time[s]');
    ylabel('frequency[Hz]');
-   title((sprintf('Spect on Lap signal for channel %s',epoch_baseline.channels{1,i})));
+   title((sprintf('Channel %s',epoch_baseline.channels{1,i})));
 end
+suptitle('Spectrogram Laplacian filtered data - MI termination')
 
 %% topoplot_raw data_fre:8-12;
 spect_for_one_channel_top=zeros(16,113); % 113 is the size of the time
@@ -266,7 +277,7 @@ for i=1:16
   
     [spect_for_one_channel,t, f]=Spectrogram_function(epoch_baseline, epoch_MI, i, epoch_baseline.fs, epoch_baseline.fs-32, Cyclic_freq2);
     for j=1:113
-         spect_for_one_channel_top(i,j)=mean(10*log10(spect_for_one_channel(:,j)));
+         spect_for_one_channel_top(i,j)=mean(log(spect_for_one_channel(:,j)));
          
     end
 end
@@ -288,7 +299,7 @@ for i=1:16
   
     [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_CAR, filt_epoch_MI_CAR, i, filt_epoch_baseline_CAR.fs, filt_epoch_baseline_CAR.fs-32, Cyclic_freq);
     for j=1:size(t,2)
-         spect_for_one_channel_top(i,j)=mean(10*log10(spect_for_one_channel(:,j)));
+         spect_for_one_channel_top(i,j)=mean(10*log(spect_for_one_channel(:,j)));
          
     end 
 end
