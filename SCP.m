@@ -60,8 +60,8 @@ signal_car=zeros(size(data_filter',1),size(data_filter',2));
 
  end
 
-
-epoch_MI=epoch_struct(session,400,-5,5);
+epoch_baseline=epoch_struct(session,200,0,3);
+epoch_MI=epoch_struct(session,400,0,3);
 
     
 for i=1:size(epoch_MI.data,3)
