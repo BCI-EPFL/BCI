@@ -167,7 +167,7 @@ for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(epoch_baseline, epoch_MI_termination, i, epoch_baseline.fs, epoch_baseline.fs-32, Cyclic_freq);
    subplot(4,4,i)
-   t=t(1,:)+epoch_MI_termination.time;
+   t=t(1,:)+epoch_MI.time;epoch_MI_terminantion.time;
    imagesc('XData',t,'YData',f, 'CData',10*log(spect_for_one_channel)); 
    axis tight
    xlabel('time[s]');
@@ -186,7 +186,6 @@ for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_CAR, filt_epoch_MI_CAR, i, filt_epoch_baseline_CAR.fs, filt_epoch_baseline_CAR.fs-32, Cyclic_freq);
    subplot(4,4,i)
-    t=t(1,:)+epoch_MI.time;
    imagesc('XData',t,'YData',f,'CData', 10*log(spect_for_one_channel)); 
    axis tight
    xlabel('time[s]');
@@ -206,7 +205,6 @@ for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_CAR, filt_epoch_MI_CAR_termination, i, filt_epoch_baseline_CAR.fs, filt_epoch_baseline_CAR.fs-32, Cyclic_freq);
    subplot(4,4,i);
-   t=t(1,:)+epoch_MI_termination.time;
    imagesc('XData',t,'YData',f,'CData', 10*log(spect_for_one_channel));
    axis tight
    h=colorbar;
@@ -226,7 +224,6 @@ for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_lap, filt_epoch_MI_lap, i, filt_epoch_baseline_lap.fs, filt_epoch_baseline_lap.fs-32, Cyclic_freq);
    subplot(4,4,i)
-    t=t(1,:)+epoch_MI.time;
    imagesc('XData',t,'YData',f,'CData', 10*log(spect_for_one_channel)); % in order to put in line the ferquencies and teh time
    axis tight
    h=colorbar;
@@ -244,7 +241,6 @@ for i=1:16
     
    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_lap, filt_epoch_MI_lap_termination, i, filt_epoch_baseline_lap.fs, filt_epoch_baseline_lap.fs-32, Cyclic_freq);
    subplot(4,4,i)
-    t=t(1,:)+epoch_MI_termination.time;
    imagesc('XData',t,'YData',f,'CData', 10*log(spect_for_one_channel)); % in order to put in line the ferquencies and teh time
    axis tight
    h=colorbar;

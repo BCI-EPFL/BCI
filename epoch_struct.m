@@ -10,6 +10,7 @@ function [ struct_epoch ] = epoch_struct( session,Align_Event,timebEvent,timeaEv
  struct_epoch.Event_pos=session.Event_pos(session.Event_type==Align_Event);
  NumTrials=size(struct_epoch.Event_type,1); 
  NumChannels=size(s,2);
+ struct_epoch.time=timebEvent; 
  cstart=abs(((struct_epoch.Event_pos)+timebEvent*struct_epoch.fs)-1);%position of the aligned event minus the afterEvent
  cstop=((timeaEvent*struct_epoch.fs)+struct_epoch.Event_pos)-1;
 
