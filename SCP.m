@@ -106,13 +106,12 @@ for i=1:size(epoch_baseline.data,3)
     a=[];
     for j=1:size(chanlocs16,2)
         
-    TrainingData(i,1:(19*j))=cat(2,a,cell2mat(PwelchTrainingOnechannel{1,j}{1,i}));
+    TrainingData(i,1:(19*j))=cat(2,a,(PwelchTrainingOnechannel{1,j}{1,i}));
     a=TrainingData(i,1:(19*j));
         
     end
     
 end
- 
  
  
  
