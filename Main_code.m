@@ -1,18 +1,45 @@
 clear;
 close;
 
+%% INPUTS
+%Defining the windown for epoching
+
+%--Baseline
+TimeBeforeEventBaseline=0;
+TimeAfterEventBaseline=3;
+%--MI
+TimeBeforeEventMI=-2;
+TimeAfterEventMI=6;
+%--MI termination
+TimeBeforeEventMItermination=-3;
+TimeAfterEventMItermination=3;
+
+%--Cyclic frequency for spectrogram
+Cyclic_freq=[5:0.1:40]; %inital:resolution:final
+
+% % HERE I WANT TO PUT SOMETHING LIKE THIS:
+% % Select options by uncommenting
+% 
+% Action(0)=1;    % pwelch on raw data
+% Action(0)=2;    % temporal filtering on raw data
+% Action(0)=3;    % CAR on raw data
+% Action(1)=1;    % pwelch on CAR data
+% 
+% % And then making if at the beginning of each sections
+%     %................
+%% Loadin paths and files
+
 addpath(genpath('biosig'));
 addpath(genpath('folder_runs'));
 addpath(genpath('data'));
 addpath(genpath('eeglab13_4_4b'));
-
 
 load('channel_location_16_10-20_mi');
 
 filename = 'ak6_run2_offlineMIterm_20181603160414.gdf';
 [s, h]= sload(filename);
 
-
+%% Creating the main structure from data
 
 session.fs=h.SampleRate;
 session.data=(s)';
@@ -20,10 +47,11 @@ session.channels={chanlocs16.labels};
 session.Event_type=h.EVENT.TYP;
 session.Event_pos=h.EVENT.POS;
 
-%% pwelch on raw data
-epoch_baseline=epoch_struct(session,200,0,3);
-epoch_MI=epoch_struct(session,400,-2,6);
-epoch_MI_termination=epoch_struct(session,555,-3,3);
+%% Pwelch on raw data
+
+epoch_baseline=epoch_struct(session,200,TimeBeforeEventBaseline,TimeAfterEventBaseline);
+epoch_MI=epoch_struct(session,400,TimeBeforeEventMI,TimeAfterEventMI);
+epoch_MI_termination=epoch_struct(session,555,TimeBeforeEventMItermination,TimeAfterEventMItermination);
 
 for i=1:size(chanlocs16,2)
    [pwelch_bas_onechannel{i},freq_1]=pwelch_for_each_channel(i,epoch_baseline,500,epoch_baseline.fs); 
@@ -47,9 +75,9 @@ end
 
 session_filt=session;
 session_filt.data=data_filter;
-filt_epoch_baseline=epoch_struct(session_filt,200,0,3);
-filt_epoch_MI=epoch_struct(session_filt,400,0,3);
-filt_epoch_MI_termination=epoch_struct(session_filt,555,-3,3);
+filt_epoch_baseline=epoch_struct(session_filt,200,TimeBeforeEventBaseline,TimeAfterEventBaseline);
+filt_epoch_MI=epoch_struct(session_filt,400,TimeBeforeEventMI,TimeAfterEventMI);
+filt_epoch_MI_termination=epoch_struct(session_filt,555,TimeBeforeEventMItermination,TimeAfterEventMItermination);
 
 for i=1:size(chanlocs16,2)
    [filt_pwelch_bas_onechannel,freq_1]=pwelch_for_each_channel(i,filt_epoch_baseline,500,filt_epoch_baseline.fs); 
@@ -82,10 +110,10 @@ session_filt_CAR=session;
 session_filt_CAR.data=signal_car';
 
 
-%%p_welch on car data
-filt_epoch_baseline_CAR=epoch_struct(session_filt_CAR,200,0,3);
-filt_epoch_MI_CAR=epoch_struct(session_filt_CAR,400,-2,6);
-filt_epoch_MI_CAR_termination=epoch_struct(session_filt_CAR,555,-3,3);
+%% p_welch on car data
+filt_epoch_baseline_CAR=epoch_struct(session_filt_CAR,200,TimeBeforeEventBaseline,TimeAfterEventBaseline);
+filt_epoch_MI_CAR=epoch_struct(session_filt_CAR,400,TimeBeforeEventMI,TimeAfterEventMI);
+filt_epoch_MI_CAR_termination=epoch_struct(session_filt_CAR,555,TimeBeforeEventMItermination,TimeAfterEventMItermination);
 
 for i=1:size(chanlocs16,2)
    [pwelch_car_bas_onechannel{i},freq_1]=pwelch_for_each_channel(i,filt_epoch_baseline_CAR,500,session_filt_CAR.fs); 
@@ -131,12 +159,12 @@ signal_laplacian = s(:,1:16)*lap;
 % subplot(3,1,3)
 % plot(signal_car(:,9))
 
-
 session_filt_lap=session;
 session_filt_lap.data=signal_laplacian';
-filt_epoch_baseline_lap=epoch_struct(session_filt_lap,200,0,3);
-filt_epoch_MI_lap=epoch_struct(session_filt_lap,400,-2,6);
-filt_epoch_MI_lap_termination=epoch_struct(session_filt_lap,555,-3,3);
+
+filt_epoch_baseline_lap=epoch_struct(session_filt_lap,200,TimeBeforeEventBaseline,TimeAfterEventBaseline);
+filt_epoch_MI_lap=epoch_struct(session_filt_lap,400,TimeBeforeEventMI,TimeAfterEventMI);
+filt_epoch_MI_lap_termination=epoch_struct(session_filt_lap,555,TimeBeforeEventMItermination,TimeAfterEventMItermination);
 
 %% Spectrogram MI initiation
 
