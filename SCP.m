@@ -114,8 +114,13 @@ for i=1:size(epoch_baseline.data,3)
 end
  
  
- 
- 
+[ind, power_feat] = rankfeat(TrainingData, EpochTraining.labels,  'fisher');
+figure(1); clf
+plot(power_feat, '-')
+xlabel('feature index')
+ylabel('Fisher score')
+grid minor
+
  
  
  
