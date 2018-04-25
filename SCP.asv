@@ -60,6 +60,7 @@ signal_car=zeros(size(data_filter',1),size(data_filter',2));
 
  end
 
+session.data=signal_car';
 epoch_baseline=epoch_struct(session,200,0,3);
 epoch_MI=epoch_struct(session,400,0,3);
 
@@ -69,10 +70,10 @@ for i=1:size(epoch_MI.data,3)
     c(:,:,i)=epoch_MI.data(:,:,i)';
 end
    
-c2=mean(c,3);
+medium_average=mean(c,3);
 
  %% plottopo
- plottopo(c2,chanlocs16);
+ plottopo(medium_average,chanlocs16);
  
  %% DECODER 
  
@@ -83,8 +84,8 @@ c2=mean(c,3);
  EpochTesting.labels=cat(1, epoch_baseline.Event_type(31:60), epoch_MI.Event_type(31:60));
  
  for i=1:size(chanlocs16,2)
-   [PwelchTrainingOnechannel{i},freq_1]=pwelch_decoder(i,epoch_baseline,[4:2:40],epoch_baseline.fs); 
-   [PwelchTestingOnechannel{i},freq_2]=pwelch_decoder(i,epoch_MI,[4:2:40],epoch_MI.fs); 
+   [PwelchTrainingOnechannel{i},freq]=pwelch_decoder(i,EpochTraining,[4:2:40],epoch_baseline.fs); 
+   [PwelchTestingOnechannel{i},freq]=pwelch_decoder(i,EpochTesting,[4:2:40],epoch_MI.fs); 
    
 %    subplot(4,4,i)
 %    plot(freq_1(1:55),10*log10(pwelch_bas_onechannel{i}(1:55)),freq_2(1:55),10*log10(pwelch_MI_onechannel{i}(1:55)))
@@ -94,34 +95,37 @@ c2=mean(c,3);
 %    legend('baseline','MI');
  end 
  
-% TAGLIARE FROM 4 to 40 Hz
+
 % interset function to cut at the right 
 
-TrainingData=zeros(60, 19*16);
-TestingData=zeros(60, 19*16);
+TrainingData=zeros(size(epoch_baseline.data,3), size(freq,2)*size(chanlocs16,2));
+TestingData=zeros(size(epoch_baseline.data,3), size(freq,2)*size(chanlocs16,2));
 
-for i=1:60
+for i=1:size(epoch_baseline.data,3)
     
     a=[];
-    for j=1:16
+    for j=1:size(chanlocs16,2)
         
-    TrainingData(i,1:(19*j))=cat(2,a,Pwelchtesting
-        
+    TrainingData(i,1:(19*j))=cat(2,a,(PwelchTrainingOnechannel{1,j}{1,i}));
+    a=TrainingData(i,1:(19*j));
         
     end
-    
-    
-    
-    
     
 end
  
  
- 
- 
- 
- 
- 
+[ind, power_feat] = rankfeat(TrainingData, EpochTraining.labels,  'fisher');
+figure(1); clf
+plot(power_feat, '-')
+xlabel('feature index')
+ylabel('Fisher score')
+grid minor
+
+PowerTraining=zeros(1,size(power_feat,2));
+for i=1:size(PowerTraining,2)
+    PowerTraining(i)=power_feat(ind==i); 
+end
+PowerTraining=reshape(PowerTraining,[
  
  
  

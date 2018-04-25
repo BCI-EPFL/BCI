@@ -84,8 +84,8 @@ medium_average=mean(c,3);
  EpochTesting.labels=cat(1, epoch_baseline.Event_type(31:60), epoch_MI.Event_type(31:60));
  
  for i=1:size(chanlocs16,2)
-   [PwelchTrainingOnechannel{i},freq]=pwelch_decoder(i,epoch_baseline,[4:2:40],epoch_baseline.fs); 
-   [PwelchTestingOnechannel{i},freq]=pwelch_decoder(i,epoch_MI,[4:2:40],epoch_MI.fs); 
+   [PwelchTrainingOnechannel{i},freq]=pwelch_decoder(i,EpochTraining,[4:2:40],epoch_baseline.fs); 
+   [PwelchTestingOnechannel{i},freq]=pwelch_decoder(i,EpochTesting,[4:2:40],epoch_MI.fs); 
    
 %    subplot(4,4,i)
 %    plot(freq_1(1:55),10*log10(pwelch_bas_onechannel{i}(1:55)),freq_2(1:55),10*log10(pwelch_MI_onechannel{i}(1:55)))
@@ -121,8 +121,13 @@ xlabel('feature index')
 ylabel('Fisher score')
 grid minor
 
- 
- 
- 
- 
+PowerTraining=zeros(1,size(power_feat,2));
+for i=1:size(PowerTraining,2)
+    PowerTraining(i)=power_feat(ind==i); 
+end
+PowerTraining=(reshape(PowerTraining,[19,size(chanlocs16,2)]))';
+
+figure
+imagesc([4 40],[1 16],PowerTraining)
+title('Fisher scores - baseline vs MI')
  
