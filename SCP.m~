@@ -206,13 +206,7 @@ end
 
 for j=1:size(power_crossfeat{1,1},2)
 for i=1:10
-crossvalPower{i}=(power_crossfeat{1,i}{1,j});
-
-end 
-crossvalPower=mean(crossvalPower{i});
-end
-
-
+crossvalPower=(power_crossfeat{1,i}{1,j});
 PowerTraining.CrossBaseMIterm=zeros(1,size(crossvalPower,2));
 
 PowerTraining.CrossBaseMIterm=crossvalPower; 
