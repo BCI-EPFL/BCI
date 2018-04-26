@@ -204,18 +204,14 @@ grid minor
 end
 
 
-for j=1:size(power_crossfeat{1,1},2)
-for i=1:10
-crossvalPower{i}=(power_crossfeat{1,i}{1,j});
 
-end 
-crossvalPower=mean(crossvalPower{i});
-end
 
+crossvalPower=cat(1,power_crossfeat{1,1},power_crossfeat{1,2:10});
+crossvalPowermean=mean(crossvalPower);
 
 PowerTraining.CrossBaseMIterm=zeros(1,size(crossvalPower,2));
 
-PowerTraining.CrossBaseMIterm=crossvalPower; 
+PowerTraining.CrossBaseMIterm=crossvalPowermean; 
 
 PowerTraining.CrossBaseMIterm=(reshape(PowerTraining.CrossBaseMIterm,[size(freq,2),size(chanlocs16,2)]))';
 
