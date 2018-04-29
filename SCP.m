@@ -41,13 +41,6 @@ session.Event_pos=cat(1,session.Event_pos,h.EVENT.POS);
 session.data=session.data(1:16,:); % we delete the last channels 17
 
 
-%% filter butter
-[b,a]=butter(2,[0.1 3]/session.fs/2); %bandpass
-data_filter=session.data;
-for i=1:size(chanlocs16,2)
-    data=session.data(i,:);
-    data_filter(i,:)=filter(b,a,data);
-end 
 
 
 %% car filter

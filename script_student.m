@@ -1,4 +1,13 @@
- 
+ clear;
+close;
+
+addpath(genpath('biosig'));
+addpath(genpath('folder_runs'));
+addpath(genpath('data'));
+addpath(genpath('eeglab13_4_4b'));
+addpath(genpath('codeProject1'));
+
+load('channel_location_16_10-20_mi');
 
 folderName =  'folder_runs_ak6';
 
@@ -29,7 +38,30 @@ for iFile = 1:nFile
     % here you put your structure function for sessioninstead of create_your_own_structure()
     s{iFile}  = session;
 end
+%% BUTTER FILTER
 
+[b,a]=butter(2,[5 40]/session.rate/2); %bandpass
+for j=1:numel(s)
+    data_filter{j}=s{j};
+    
+    for i=1:size(chanlocs16,2)
+        
+        data=s{j}.data(:,i);
+        data_filter{j}.data(:,i)=filter(b,a,data);
+    end
+    clear data;
+   
+end
+%% CAR FILTER
+
+for j=1:numel(data_filter)
+ medium_channels=mean(data_filter{j}.data');
+    signal_car{j}=data_filter{j};
+    for i=1:size(data_filter{j}.data,1)
+        signal_car{j}.data(i,:)=data_filter{j}.data(i,:)-medium_channels(1,i);
+        
+    end
+end
 %% Extract PSD
 s = preprocess_spectrogram(s,params_spectrogram);
 % return session with data in 3D (a new dimension for frequency!)
@@ -40,4 +72,6 @@ s = preprocess_spectrogram(s,params_spectrogram);
 % + concantenate runs 
 %epochs_PSD_ONSET  = epoching_function();
 
-
+for i=1:numel(s)
+struct_epoch=epoch_window(s{i},Align_Event,timebEvent,timeaEvent,windowlength,overlap)
+end
