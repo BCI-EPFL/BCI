@@ -72,16 +72,12 @@ s = preprocess_spectrogram(s,params_spectrogram);
 % + concantenate runs 
 %epochs_PSD_ONSET  = epoching_function();
 
-runconc.data=[];
-runconc.event.name=[];
-runconc.event.position=[];
-runconc.freq=[];
+runconc=[]
 for i=1:numel(s)
     runconc.data=cat(3,runconc.data,s{i}.data);
-    runconc.event.name=cat(1,runconc.event.name,s{i}.event.name);
-    runconc.event.position=cat(1,runconc.event.position,s{i}.event.position+size(runconc.event.position,3));
-    runconc.freq=s{1}.freq;
-end
+    runconc.event.name=cat(3,runconc.event.name,s{i}.event.name);
+    runconc.event.position=cat(3,runconc.event.position,s{i}.event.position+size(runconc.event.position,3));
+    runconc.freq
 struct_epoch=epoch_window(runconc,Align_Event,timebEvent,timeaEvent,windowlength,overlap)
 
 
