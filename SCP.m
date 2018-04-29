@@ -193,12 +193,6 @@ test=TrainingData.BaseMIterm(c.test(i),:);
 labelTrain=EpochTraining.BaseMIterm.labels(c.training(i),:);
 labelTest=EpochTraining.BaseMIterm.labels(c.test(i),:);
 [indcross{i}, power_crossfeat{i}] = rankfeat(train, labelTrain,  'fisher');
-figure;
-hold on
-plot(power_crossfeat, '-')
-xlabel('feature index')
-ylabel('Fisher score')
-grid minor
 
 
 end
@@ -208,8 +202,6 @@ end
 
 crossvalPower=cat(1,power_crossfeat{1,1},power_crossfeat{1,2:10});
 crossvalPowermean=mean(crossvalPower);
-
-PowerTraining.CrossBaseMIterm=zeros(1,size(crossvalPower,2));
 
 PowerTraining.CrossBaseMIterm=crossvalPowermean; 
 
