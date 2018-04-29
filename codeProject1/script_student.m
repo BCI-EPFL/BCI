@@ -1,7 +1,7 @@
  
 
 
-folderName =  'pathOfYourFolder';
+folderName =  'folder_runs_ak6';
 
 params_spectrogram.mlength    = 1;
 params_spectrogram.wlength    = 0.5;
@@ -23,7 +23,7 @@ for iFile = 1:nFile
     %% Extract data
     % Load the data and put it into a structure as before
     [signal,header] = sload(fileName);
-    
+    session.data=signal;
     % here you put your structure function for sessioninstead of create_your_own_structure()
     s{iFile}  = session;
 end
