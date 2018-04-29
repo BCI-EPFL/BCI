@@ -7,7 +7,7 @@ addpath(genpath('biosig'));
 addpath(genpath('folder_runs'));
 addpath(genpath('data'));
 addpath(genpath('eeglab13_4_4b'));
-
+addpath(genpath('codeProject1'));
 
 load('channel_location_16_10-20_mi');
 
@@ -26,8 +26,8 @@ session.data=cat(2,session.data,s');
 session.Event_type=cat(1,session.Event_type,h.EVENT.TYP);
 session.Event_pos=cat(1,session.Event_pos,h.EVENT.POS);
 
- filename_6c = 'ak6_run3_offlineMIterm_20181603162521.gdf';
- [s, h]= sload(filename_6c);
+filename_6c = 'ak6_run3_offlineMIterm_20181603162521.gdf';
+[s, h]= sload(filename_6c);
 session.data=cat(2,session.data,s');
 session.Event_type=cat(1,session.Event_type,h.EVENT.TYP);
 session.Event_pos=cat(1,session.Event_pos,h.EVENT.POS);
