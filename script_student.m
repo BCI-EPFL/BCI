@@ -63,7 +63,7 @@ for j=1:numel(data_filter)
     end
 end
 %% Extract PSD
-s = preprocess_spectrogram(s,params_spectrogram);
+s = preprocess_spectrogram(signal_car,params_spectrogram);
 % return session with data in 3D (a new dimension for frequency!)
 
 
@@ -77,12 +77,12 @@ runconc.event.name=[];
 runconc.event.position=[];
 runconc.freq=[];
 for i=1:numel(s)
-    runconc.data=cat(3,runconc.data,s{i}.data);
+    runconc.data=cat(3,runconc.data,s{i}.data);% concatenation of all the 4 runs_data
     runconc.event.name=cat(1,runconc.event.name,s{i}.event.name);
     runconc.event.position=cat(1,runconc.event.position,s{i}.event.position+size(runconc.event.position,3));
     runconc.freq=s{1}.freq;
 end
-struct_epoch=epoch_window(runconc,Align_Event,timebEvent,timeaEvent,windowlength,overlap)
+struct_epoch=epoch_window(runconc,Align_Event,timebEvent,timeaEvent,windowlength,overlap);
 
 
 

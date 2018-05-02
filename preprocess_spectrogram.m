@@ -17,6 +17,8 @@ for iRun = 1:nRun
     cevents     = thisRun.event;
     events.name = cevents.name;
     events.position = proc_pos2win(cevents.position, params_spectrogram.wshift*512, 'backward', params_spectrogram.mlength*512);
+    %the multiplication with the frequences is due the fact we pass in
+    %sample
     
     % Save structure for each run
     spectrogramData{iRun}.event = events;

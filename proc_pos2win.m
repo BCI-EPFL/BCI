@@ -1,4 +1,5 @@
-function wPOS = proc_pos2win(POS, wshift, direction, wlength)
+
+function wPOS = proc_pos2win(POS, wshift, direction, mlength)
 % wPOS = proc_pos2win(POS, wshift, edge, wlength)
 %
 % The function converts sample position (POS) to window (psd) position for 
@@ -24,7 +25,7 @@ function wPOS = proc_pos2win(POS, wshift, direction, wlength)
 
     backward = false;
     if strcmpi(direction, 'forward')
-        wlength = [];
+        mlength = [];
     elseif strcmpi(direction, 'backward')
         backward = true;
         if nargin == 3
@@ -34,10 +35,10 @@ function wPOS = proc_pos2win(POS, wshift, direction, wlength)
         error('chk:arg', 'Direction not recognized: only forward and backward are allowed');
     end
     
-    wPOS = floor(POS/wshift) + 1;
+    wPOS = floor(POS/wshift) + 1; %how many shifts there are before reaching that Event sample
     
     if backward == true
-        wPOS = wPOS - (floor(wlength/wshift));
+        wPOS = wPOS - (floor(mlength/wshift)); %floor(wlength/wshift) is the number of windows that ovelaps with one windows
     end
 
 end

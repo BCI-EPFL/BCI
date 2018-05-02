@@ -1,4 +1,4 @@
-function [features, f] = proc_spectrogram(data, wlenght, wshift, pshift, samplerate, mlength)
+function [features, f] = proc_spectrogram(data, wlength, wshift, pshift, samplerate, mlength)
 % [features, f] = proc_spectrogram(data, wlenght, wshift, pshift, samplerate [, mlength])
 %
 % The function computes the spectrogram on the real data.
@@ -49,7 +49,7 @@ function [features, f] = proc_spectrogram(data, wlenght, wshift, pshift, sampler
     end
 
     % Create arguments for spectrogram
-    spec_win = wlenght*samplerate;
+    spec_win = wlength*samplerate;
     
     % Careful here: The overlapping depends on whether the winshift or the
     % psdshift is smaller. Some calculated internal windows will be redundant,
