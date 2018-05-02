@@ -128,11 +128,28 @@ for i=1:10
    %Fisher's score: we need to save it for every feature for every
    %iteration (we will make the average outside the CV loop)
    [ind(i,:), power_feat(i,:)] = rankfeat(TrainingFolds.BaseMI.data, TrainingFolds.BaseMI.labels,  'fisher');
+
+   %loop over the number of features
+   for Nsel=[1:14,15:5:50,75:25:304]
+       classifier=fitcdiscr(TrainingFolds.BaseMI.data(:,ind(1:Nsel)),TrainingFolds.BaseMI.labels,'discrimtype','linear');
+       yhat=predict(classifier,ValidationFold.BaseMI.data);
+       
+   end
 end
 
-features=zeros(size(power_feat,2),1);
+%average outside CV
+averageFisher=zeros(size(power_feat,2),1);
 for i=1:size(power_feat,2)
     for j=1:10
-        features(i)=features(i)+power_feat(j,powerfeat(j))
+        averageFisher(i)=averageFisher(i)+power_feat(j,ind(j,:)==i);
     end
+    averageFisher(i)=averageFisher(i)/10;
 end
+
+%reshaping average Fisher's scores from line to matrix to plot them
+averageFisher=reshape(averageFisher,[19 16])';
+
+%plot of Fisher's scores
+figure
+imagesc([4 40],[1 16],averageFisher)
+title('Fisher scores - baseline vs MI')
