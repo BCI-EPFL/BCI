@@ -92,10 +92,10 @@ epoch_MI_term=epoch_window(runconc,555,0,3,params_spectrogram.mlength,params_spe
 thresholdCross=0.75; %25% of the data is test set
 
 EpochTraining.BaseMI.data=cat(3, epoch_baseline.samples(:,:,1:thresholdCross*size(epoch_baseline.samples,3)), epoch_MI.samples(:,:,1:thresholdCross*size(epoch_MI.samples,3)));
-EpochTraining.BaseMI.labels=cat(1,epoch_baseline.labels(1:thresholdCross*size(epoch_baseline.labels,1)), epoch_MI.labels(1:thresholdCross*size(epoch_MI.labels,1)));
+EpochTraining.BaseMI.labels=cat(1,epoch_baseline.labels(1:thresholdCross*size(epoch_baseline.labels,3)), epoch_MI.labels(1:thresholdCross*size(epoch_MI.labels,3)));
  
-EpochTesting.BaseMI.data=cat(3, epoch_baseline.samples(:,:,(thresholdCross*size(epoch_baseline.samples,3)+1):end), epoch_MI.samples(:,:,(thresholdCross*size(epoch_MI.samples,3)+1):end));
-EpochTesting.BaseMI.labels=cat(1, epoch_baseline.labels((thresholdCross*size(epoch_baseline.samples,1)+1):end), epoch_MI.labels((thresholdCross*size(epoch_MI.samples,1)+1):end));
+EpochTesting.BaseMI.data=cat(3, epoch_baseline.samples(:,:,(thresholdCross*size(epoch_baseline.samples,3)+1):end), epoch_MI.samples(:,:,(thresholdCross*size(epoch_baseline.samples,3)+1):end));
+EpochTesting.BaseMI.labels=cat(1, epoch_baseline.labels((thresholdCross*size(epoch_baseline.samples,3)+1):end:end), epoch_MI.labels((thresholdCross*size(epoch_MI.samples,3)+1):end));
 
 
 
