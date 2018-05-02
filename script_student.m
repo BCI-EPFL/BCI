@@ -129,3 +129,20 @@ for i=1:10
    %iteration (we will make the average outside the CV loop)
    [ind(i,:), power_feat(i,:)] = rankfeat(TrainingFolds.BaseMI.data, TrainingFolds.BaseMI.labels,  'fisher');
 end
+
+%average outside CV
+averageFisher=zeros(size(power_feat,2),1);
+for i=1:size(power_feat,2)
+    for j=1:10
+        averageFisher(i)=averageFisher(i)+power_feat(j,ind(j,:)==i);
+    end
+    averageFisher(i)=averageFisher(i)/10;
+end
+
+%reshaping average Fisher's scores from line to matrix to plot them
+averageFisher=reshape(averageFisher,[19 16])';
+
+%plot of Fisher's scores
+figure
+imagesc([4 40],[1 16],averageFisher)
+title('Fisher scores - baseline vs MI')

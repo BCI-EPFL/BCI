@@ -120,12 +120,19 @@ end
 %Proper CV
 for i=1:10
    %definition of the folds
-   TrainingFolds.BaseMI.data=cat(3,Folds.BaseMI.data{[1:(i-1),(i+1):10]});
+   TrainingFolds.BaseMI.data=cat(1,Folds.BaseMI.data{[1:(i-1),(i+1):10]});
    TrainingFolds.BaseMI.labels=cat(1,Folds.BaseMI.labels{[1:(i-1),(i+1):10]});
    ValidationFold.BaseMI.data=Folds.BaseMI.data{i};
    ValidationFold.BaseMI.labels=Folds.BaseMI.labels{i};
    
    %Fisher's score: we need to save it for every feature for every
    %iteration (we will make the average outside the CV loop)
-   %[ind, power_feat] = rankfeat(TrainingFolds.BaseMI.data, TrainingFolds.BaseMI.labels,  'fisher');
+   [ind(i,:), power_feat(i,:)] = rankfeat(TrainingFolds.BaseMI.data, TrainingFolds.BaseMI.labels,  'fisher');
+end
+
+features=zeros(size(power_feat,2),1);
+for i=1:size(power_feat,2)
+    for j=1:10
+        features(i)=features(i)+power_feat(j,powerfeat(j))
+    end
 end
