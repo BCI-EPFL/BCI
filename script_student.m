@@ -105,3 +105,27 @@ for i=1:10
     Folds.BaseMI.data{i}=cat(3,EpochTraining.BaseMI.data(:,:,contStart:contEnd),EpochTraining.BaseMI.data(:,:,(contStart+NoTrainingSamplesPerClass):(contEnd+NoTrainingSamplesPerClass)));
     Folds.BaseMI.labels{i}=cat(1,EpochTraining.BaseMI.labels(contStart:contEnd),EpochTraining.BaseMI.labels((contStart+NoTrainingSamplesPerClass):(contEnd+NoTrainingSamplesPerClass)));
 end
+
+%Now we need to transform every sample from a matrix to a line (because
+%rankfeat wants lines)
+a=Folds; 
+Folds.BaseMI=rmfield(Folds.BaseMI,'data');
+for i=1:10
+    for j=1:size(a.BaseMI.data{1,i},3)
+        Folds.BaseMI.data{1,i}(j,:)=reshape(a.BaseMI.data{1,i}(:,:,j)',[1,16*19]); 
+    end    
+end
+
+%---
+%Proper CV
+for i=1:10
+   %definition of the folds
+   TrainingFolds.BaseMI.data=cat(1,Folds.BaseMI.data{[1:(i-1),(i+1):10]});
+   TrainingFolds.BaseMI.labels=cat(1,Folds.BaseMI.labels{[1:(i-1),(i+1):10]});
+   ValidationFold.BaseMI.data=Folds.BaseMI.data{i};
+   ValidationFold.BaseMI.labels=Folds.BaseMI.labels{i};
+   
+   %Fisher's score: we need to save it for every feature for every
+   %iteration (we will make the average outside the CV loop)
+   [ind(i,:), power_feat(i,:)] = rankfeat(TrainingFolds.BaseMI.data, TrainingFolds.BaseMI.labels,  'fisher');
+end
