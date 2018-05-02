@@ -99,9 +99,9 @@ EpochTesting.BaseMI.labels=cat(1, epoch_baseline.labels((thresholdCross*size(epo
 
 NoTrainingSamplesPerClass=thresholdCross*size(epoch_baseline.samples,3);
 TrialsPerFold=NoTrainingSamplesPerClass/(33*10);  %33=no. of windows per trial, 10=folds cv;
-for i=1:TrialsPerFold
+for i=1:10
     contStart=(TrialsPerFold*(i-1)*33+1);
     contEnd=TrialsPerFold*i*33;
-    Folds.BaseMI.(int2str(i)).data=cat(3,EpochTraining.BaseMI.data(:,contStart:contEnd),EpochTraining.BaseMI.data(:,contStart+NoTrainingSamplesPerClass:contEnd+NoTrainingSamplesPerClass));
-    Folds.BaseMI.(int2str(i)).labels=cat(1,EpochTraining.BaseMI.data(:,contStart:contEnd),EpochTraining.BaseMI.data(:,contStart+NoTrainingSamplesPerClass:contEnd+NoTrainingSamplesPerClass));
+    Folds.BaseMI.data{i}=cat(3,EpochTraining.BaseMI.data(:,:,contStart:contEnd),EpochTraining.BaseMI.data(:,:,(contStart+NoTrainingSamplesPerClass):(contEnd+NoTrainingSamplesPerClass)));
+    Folds.BaseMI.labels{i}=cat(1,EpochTraining.BaseMI.labels(contStart:contEnd),EpochTraining.BaseMI.labels((contStart+NoTrainingSamplesPerClass):(contEnd+NoTrainingSamplesPerClass)));
 end
