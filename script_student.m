@@ -132,7 +132,7 @@ for i=1:10
    %loop over the number of features
    for Nsel=[1:14,15:5:50,75:25:304]
        classifier=fitcdiscr(TrainingFolds.BaseMI.data(:,ind(1:Nsel)),TrainingFolds.BaseMI.labels,'discrimtype','linear');
-       yhat=predict(classifier,ValidationFold.BaseMI.data(:,ind(1:Nsel)));
+       [yhat,PosteriorProb,~]=predict(classifier,ValidationFold.BaseMI.data(:,ind(1:Nsel)));
        ClassError(i,Nsel)=classerror(ValidationFold.BaseMI.labels,yhat);
        Nsel
    end
