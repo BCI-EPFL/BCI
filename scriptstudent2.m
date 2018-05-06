@@ -159,7 +159,7 @@ for i=1:10
 end
 
 %---
-%% Proper CV, with rank feat:Marco
+%% Proper CV, with rank feat:Marco plus all classifier
 for i=1:10
    %definition of the folds
    TrainingFolds.BaseMi.data=cat(1,Folds.BaseMi.data{[1:(i-1),(i+1):10]});
@@ -229,19 +229,9 @@ ylabel('channels');
 h=colorbar;
 
 %% PCA and rank-feat: Elisabetta
-% cross validation to choose the hyperparameter of the number of rank-feat
-% features and the PCA component
 
 
-% plot(1:304,power_feat.BaseMi);
-% title('discriminat power for 304 features for a 10 fold cross validation');
-% xlabel('number of features');
-% ylabel('discriminant power');
-% legend('Fold 1','Fold 2','Fold 3','Fold 4','Fold 5','Fold 6','Fold 7','Fold 8','Fold 9','Fold 10');
-% grid on 
-% Nselected=100;
-
-%let's apply pca on the number of features reduces:
+%let's apply pca on the number of features reduces:N selected
 
 for i=1:10
    %definition of the folds
@@ -267,7 +257,7 @@ for i=1:10
    ValidationFold.BaseMi.dataPCA=ValidationFold.BaseMi.data(:,ind.BaseMi(1:200))*(coeff_val*coeff_val');
    
    
-   Classifier={'linear', 'diaglinear','diagquadratic'};% quadratic
+   Classifier={'linear', 'diaglinear','diagquadratic'};% quadratic no possible
    for j=1:numel(Classifier)
        for Nsel=1:200 
           classifier.BaseMiPCA=fitcdiscr(TrainingFolds.BaseMi.dataPCA(:,(1:Nsel)),TrainingFolds.BaseMi.labels,'discrimtype',Classifier{1,j});
@@ -318,6 +308,84 @@ axis tight
 xlabel('frequencies');
 ylabel('channels');
 h=colorbar;
+
+
+%% third case: PCA BEFORE RANK-FEAT
+
+for i=1:10
+   %definition of the folds
+   TrainingFolds.BaseMi.data=cat(1,Folds.BaseMi.data{[1:(i-1),(i+1):10]});
+   TrainingFolds.BaseMi.labels=cat(1,Folds.BaseMi.labels{[1:(i-1),(i+1):10]});
+   ValidationFold.BaseMi.data=Folds.BaseMi.data{i};
+   ValidationFold.BaseMi.labels=Folds.BaseMi.labels{i};
+   
+   %normalization
+   [TrainingFolds.BaseMi.data, mu.BaseMi, sigma.BaseMi]=zscore(TrainingFolds.BaseMi.data);% Mu is the mean and Sigma is the standard devition
+   ValidationFold.BaseMi.data=(ValidationFold.BaseMi.data-mu.BaseMi)./sigma.BaseMi;
+   
+   %Fisher's score: we need to save it for every feature for every
+   %iteration (we will make the average outside the CV loop)
+
+   
+   [coeff_train, score_train, variance_train] = pca(TrainingFolds.BaseMi.data(:,:));
+   [coeff_val, score_val, variance_val] = pca(ValidationFold.BaseMi.data(:,:));
+   TrainingFolds.BaseMi.dataPCArank=TrainingFolds.BaseMi.data*(coeff_train*coeff_train.');
+   ValidationFold.BaseMi.dataPCArank=ValidationFold.BaseMi.data*(coeff_val*coeff_val.');
+   [ind.BaseMiPCArank(i,:), power_feat.BaseMiPCArank(i,:)] = rankfeat(TrainingFolds.BaseMi.dataPCArank, TrainingFolds.BaseMi.labels,'fisher');
+
+
+  Classifier={'linear', 'diaglinear','diagquadratic'};% quadratic no possible
+   for j=1:numel(Classifier)
+       for Nsel=1:304 
+          classifier.BaseMiPCArank=fitcdiscr(TrainingFolds.BaseMi.dataPCArank(:,(1:Nsel)),TrainingFolds.BaseMi.labels,'discrimtype',Classifier{1,j});
+          [yhat.BaseMiPCArank,PosteriorProb.BaseMiPCArank,~]=predict(classifier.BaseMiPCArank,ValidationFold.BaseMi.dataPCArank(:,(1:Nsel)));
+          ClassError.BaseMiPCA{j}(i,Nsel)=classerror(ValidationFold.BaseMi.labels,yhat.BaseMiPCArank);
+       %Nsel
+       end
+   end
+end
+
+% mean of the class error to chose the type of classifier with PCA and the number of features--> 
+
+for j=1:numel(Classifier)
+MeanClassError.BaseMiPCA{j}=mean(ClassError.BaseMiPCA{j});
+[ClassError.MinValuePCA{j},ClassError.MinIndPCA{j}]=min(MeanClassError.BaseMiPCA{j});
+end
+
+plot(1:304,mean(ClassError.BaseMiPCA{1}));% min error 0.0396, linear
+title('Classifier and class error ');
+legend('Classifier:linear');
+xlabel('features');
+ylabel('class error');
+
+Nselected=150;
+
+%--> THERE IS NO DIFFERENCE WITH PCA AND WITHOUT PCA----%
+
+%average outside CV, put in order all the features from rank feat for the
+%final plot
+averageFisher.BaseMiPCArank=zeros(size(power_feat.BaseMiPCArank,2),1);
+for i=1:size(power_feat.BaseMiPCArank,2) % each features that we wanna find
+    for j=1:10 %for each fold
+        averageFisher.BaseMiPCArank(i)=averageFisher.BaseMiPCArank(i)+power_feat.BaseMiPCArank(j,ind.BaseMiPCArank(j,:)==i);
+    end
+    averageFisher.BaseMiPCArank(i)=averageFisher.BaseMiPCArank(i)/10;
+end
+
+
+
+%reshaping average Fisher's scores from line to matrix to plot them
+averageFisher.BaseMiPCArank=reshape(averageFisher.BaseMiPCArank,[19 16])'; % reshape in a way to have 16 channels for rows and 19 channles for columns
+
+%plot of Fisher's scores
+figure
+imagesc('XData',[4 40],'YData',[1 16],'CData',averageFisher.BaseMiPCArank);
+title('Fisher scores - baseline vs MI');
+axis tight
+xlabel('frequencies');
+ylabel('channels');
+h=colorbar;
+
 
 %% -----
 %%BASELINE vs MI Termination

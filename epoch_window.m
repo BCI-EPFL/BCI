@@ -17,5 +17,6 @@ struct_window.samples=[];
  struct_window.samples=cat(3,struct_window.samples,A,C);
  end
  
+ struct_window.duration=samplesAfterAlignEvents+samplesBeforeAlignEvents+1;
  struct_window.labels=ones(size(session.event.name(session.event.name==Align_Event),1)*(samplesBeforeAlignEvents+samplesAfterAlignEvents+1),1)*Align_Event;
   end
