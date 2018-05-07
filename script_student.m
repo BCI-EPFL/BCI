@@ -88,25 +88,6 @@ epoch_baseline=epoch_window(runconc,200,0,3,params_spectrogram.mlength,params_sp
 epoch_MI=epoch_window(runconc,400,0,3,params_spectrogram.mlength,params_spectrogram.wshift);
 epoch_MI_term=epoch_window(runconc,555,0,3,params_spectrogram.mlength,params_spectrogram.wshift);
  
-%% Spectrogram
-
-Cyclic_freq=[5:2:40];
-
-figure;
-for i=1:16
-    
-   [spect_for_one_channel,t, f]=New_spectrogram(epoch_baseline, epoch_MI, i, epoch_baseline.sampleRate, epoch_baseline.sampleRate-32, Cyclic_freq);
-   subplot(4,4,i)
-   t=t(1,:)+0;
-   imagesc('XData',t,'YData',f, 'CData',10*log(spect_for_one_channel)); 
-   axis tight
-   xlabel('time[s]');
-   ylabel('frequency[Hz]');
-   h=colorbar;
-   set(h,'ylim',[-5 5]);
-  % title((sprintf('Channel %s',epoch_baseline.channels{1,i})));
-end
-suptitle('Baseline - MI ');
 
 %% cross validation for each trial to avoid the proble of time-chronological event 
  
