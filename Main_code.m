@@ -1,5 +1,6 @@
 clear;
 close;
+clc
 
 %% INPUTS
 %Defining the windown for epoching
@@ -34,7 +35,7 @@ Action=[0, 0, 0, 0, 0];
 
 % Action=[1, 0, 0, 1, 0]    % Spectrogram MI init/term (on raw Pwelch)
 
-% Action=[3, 1, 0, 2, 0]    % Spectrogram CAR MI init/term
+ Action=[3, 1, 0, 2, 0]    % Spectrogram CAR MI init/term
 
 % Action=[4, 0, 0, 3, 0]    % Spectrogram Laplacian MI init/term
 
@@ -50,6 +51,7 @@ addpath(genpath('biosig'));
 addpath(genpath('folder_runs'));
 addpath(genpath('data'));
 addpath(genpath('eeglab13_4_4b'));
+addpath(genpath('folder_runs_ak6'));
 
 load('channel_location_16_10-20_mi');
 
