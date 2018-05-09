@@ -353,7 +353,7 @@ end
 
 for j=1:numel(Classifier)
     MeanClassError.BaseMiPCArank{j}=mean(ClassError.BaseMiPCArank{j});
-    plot(1:304,MeanClassError.BaseMiPCArank{j});
+    plot(1:Nselected,MeanClassError.BaseMiPCArank{j});
    
     title('Classifier and class error ');
     legend('Classifier: Linear','Classifier: DiagLinear','Classifier: DiagQuadratic');
@@ -361,11 +361,11 @@ for j=1:numel(Classifier)
     ylabel('class error');
     hold on 
 end
+Nselected=150;
 
-NselectedPCArank=100; %linear is still the best one, error is half smaller (0.05)
+%--> THERE IS NO DIFFERENCE WITH PCA AND WITHOUT PCA----%
 
-
-%% average outside CV, put in order all the features from rank feat for the
+%average outside CV, put in order all the features from rank feat for the
 %final plot
 averageFisher.BaseMiPCArank=zeros(size(power_feat.BaseMiPCArank,2),1);
 for i=1:size(power_feat.BaseMiPCArank,2) % each features that we wanna find
@@ -389,7 +389,6 @@ xlabel('frequencies');
 ylabel('channels');
 h=colorbar;
 
-%no difference in the final spectrogram
 
 %% -----
 %%BASELINE vs MI Termination

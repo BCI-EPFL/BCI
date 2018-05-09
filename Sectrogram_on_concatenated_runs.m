@@ -21,7 +21,7 @@ TimeAfterEventMItermination=3;
 Cyclic_freq=[5:0.1:40]; %inital:resolution:final
 
 
-%% Loadin paths and files
+%% Loading paths and files
 
 addpath(genpath('biosig'));
 addpath(genpath('folder_runs'));
