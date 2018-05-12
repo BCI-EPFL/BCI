@@ -9,7 +9,7 @@ addpath(genpath('codeProject1'));%--?
 
 load('channel_location_16_10-20_mi');
 
-folderName =  'folder_runs_ak6';
+folderName =  'folder_runs_ak5_Giammarco';
 
 params_spectrogram.mlength    = 1;
 params_spectrogram.wlength    = 0.5;
@@ -204,7 +204,7 @@ end
 %from the plot the linear shows higher perfomance, let's consider 150
 %features good one with error 0.15
 
-Nselected=150;   
+Nselected=150;   %for Elisabetta
 
 %% average outside CV, put in order all the features from rank feat for the
 %final plot
@@ -230,7 +230,7 @@ xlabel('frequencies');
 ylabel('channels');
 h=colorbar;
 
-%% PCA and rank-feat: Elisabetta
+%% --> si PCA and rank-feat: Elisabetta
 
 
 %let's apply pca on the number of features reduces:N selected
@@ -284,7 +284,7 @@ for j=1:numel(Classifier)
 end
 
 
-NselectedPCA=50; % best is still the linear one
+NselectedPCA=50; % best is still the linear one,for Elisabetta
 
 %--> THERE IS NO DIFFERENCE WITH PCA AND WITHOUT PCA----%
 
@@ -317,7 +317,7 @@ h=colorbar;
 
 for i=1:10
    %definition of the folds
-   TrainingFolds.BaseMi.data=cat(1,Folds.BaseMi.data{[1:(i-1),(i+1):10]});
+   TrainingFolds.BaseMI.data=cat(1,Folds.BaseMi.data{[1:(i-1),(i+1):10]});
    TrainingFolds.BaseMi.labels=cat(1,Folds.BaseMi.labels{[1:(i-1),(i+1):10]});
    ValidationFold.BaseMi.data=Folds.BaseMi.data{i};
    ValidationFold.BaseMi.labels=Folds.BaseMi.labels{i};
@@ -331,11 +331,12 @@ for i=1:10
 
    
    [coeff_train, score_train, variance_train] = pca(TrainingFolds.BaseMi.data(:,:));
-   [coeff_val, score_val, variance_val] = pca(ValidationFold.BaseMi.data(:,:));
+   %[coeff_val, score_val, variance_val] = pca(ValidationFold.BaseMi.data(:,:));
+   score_val=ValidationFold.BaseMi.data*coeff_train;
    
-   TrainingFolds.BaseMi.dataPCArank=TrainingFolds.BaseMi.data*(coeff_train*coeff_train.');
-   ValidationFold.BaseMi.dataPCArank=ValidationFold.BaseMi.data*(coeff_val*coeff_val.');
-   [ind.BaseMiPCArank(i,:), power_feat.BaseMiPCArank(i,:)] = rankfeat(TrainingFolds.BaseMi.dataPCArank, TrainingFolds.BaseMi.labels,'fisher');
+%    TrainingFolds.BaseMi.dataPCArank=TrainingFolds.BaseMi.data*(coeff_train*coeff_train.');
+%    ValidationFold.BaseMi.dataPCArank=ValidationFold.BaseMi.data*(coeff_val*coeff_val.');
+  [ind.BaseMi.PCArank(i,:), power_feat.BaseMi.PCArank(i,:)] = rankfeat(TrainingFolds.BaseMi.dataPCArank, TrainingFolds.BaseMi.labels,'fisher');
 
 
   Classifier={'linear', 'diaglinear','diagquadratic'};% quadratic no possible

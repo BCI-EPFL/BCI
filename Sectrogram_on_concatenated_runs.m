@@ -38,7 +38,7 @@ FilesGiam={'ak5_run1_offlineMIterm_20182003154933.gdf', 'ak5_run2_offlineMIterm_
 AllFiles=[FilesEli; FilesMarco; FilesGiam];
 
 
-for j=1:length(FilesEli)
+for j=1:length(FilesMarco)
 
 filename = (AllFiles{x,j});
 [s, h]= sload(filename);
@@ -112,7 +112,7 @@ figure;
 
 for i=1:16
    
-   Matrix.(channels{i})=Matrix.(channels{i})./length(FilesEli);
+   Matrix.(channels{i})=Matrix.(channels{i})./FilesMarco;
    subplot(4,4,i);
    time=t(1,:)+ filt_epoch_MI_CAR_termination.time;
    imagesc('XData',time,'YData',f,'CData', 10*log(Matrix.(channels{i})));

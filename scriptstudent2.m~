@@ -9,7 +9,7 @@ addpath(genpath('codeProject1'));%--?
 
 load('channel_location_16_10-20_mi');
 
-folderName =  'folder_runs_ak6';
+folderName =  'folder_runs_ak5_Giammarco';
 
 params_spectrogram.mlength    = 1;
 params_spectrogram.wlength    = 0.5;
@@ -204,7 +204,7 @@ end
 %from the plot the linear shows higher perfomance, let's consider 150
 %features good one with error 0.15
 
-Nselected=150;   
+Nselected=150;   %for Elisabetta
 
 %% average outside CV, put in order all the features from rank feat for the
 %final plot
@@ -230,7 +230,7 @@ xlabel('frequencies');
 ylabel('channels');
 h=colorbar;
 
-%% PCA and rank-feat: Elisabetta
+%% --> si PCA and rank-feat: Elisabetta
 
 
 %let's apply pca on the number of features reduces:N selected
@@ -284,7 +284,7 @@ for j=1:numel(Classifier)
 end
 
 
-NselectedPCA=50; % best is still the linear one
+NselectedPCA=50; % best is still the linear one,for Elisabetta
 
 %--> THERE IS NO DIFFERENCE WITH PCA AND WITHOUT PCA----%
 
@@ -331,19 +331,20 @@ for i=1:10
 
    
    [coeff_train, score_train, variance_train] = pca(TrainingFolds.BaseMi.data(:,:));
-   [coeff_val, score_val, variance_val] = pca(ValidationFold.BaseMi.data(:,:));
+   %[coeff_val, score_val, variance_val] = pca(ValidationFold.BaseMi.data(:,:));
+   score_val=ValidationFold.BaseMi.data*coeff_train;
    
-   TrainingFolds.BaseMi.dataPCArank=TrainingFolds.BaseMi.data*(coeff_train*coeff_train.');
-   ValidationFold.BaseMi.dataPCArank=ValidationFold.BaseMi.data*(coeff_val*coeff_val.');
-   [ind.BaseMiPCArank(i,:), power_feat.BaseMiPCArank(i,:)] = rankfeat(TrainingFolds.BaseMi.dataPCArank, TrainingFolds.BaseMi.labels,'fisher');
+%    TrainingFolds.BaseMi.dataPCArank=TrainingFolds.BaseMi.data*(coeff_train*coeff_train.');
+%    ValidationFold.BaseMi.dataPCArank=ValidationFold.BaseMi.data*(coeff_val*coeff_val.');
+  [ind.BaseMi.PCA(i,:), power_feat.BaseMi.PCA(i,:)] = rankfeat(score_train, TrainingFolds.BaseMi.labels,'fisher');
 
 
   Classifier={'linear', 'diaglinear','diagquadratic'};% quadratic no possible
    for j=1:numel(Classifier)
-       for Nsel=1:304 
-          classifier.BaseMiPCArank=fitcdiscr(TrainingFolds.BaseMi.dataPCArank(:,(1:Nsel)),TrainingFolds.BaseMi.labels,'discrimtype',Classifier{1,j});
-          [yhat.BaseMiPCArank,PosteriorProb.BaseMiPCArank,~]=predict(classifier.BaseMiPCArank,ValidationFold.BaseMi.dataPCArank(:,(1:Nsel)));
-          ClassError.BaseMiPCArank{j}(i,Nsel)=classerror(ValidationFold.BaseMi.labels,yhat.BaseMiPCArank);
+       for Nsel=1:50 %until 304 
+          classifier.BaseMi.PCA=fitcdiscr(score_train(:,(1:Nsel)),TrainingFolds.BaseMi.labels,'discrimtype',Classifier{1,j});
+          [yhat.BaseMi.PCA,PosteriorProb.BaseMi.PCA,~]=predict(classifier.BaseMi.PCA,score_val(:,(1:Nsel)));
+          ClassError.BaseMi.PCA{j}(i,Nsel)=classerror(ValidationFold.BaseMi.labels,yhat.BaseMi.PCAran);
        %Nsel
        end
    end
@@ -353,7 +354,7 @@ end
 
 for j=1:numel(Classifier)
     MeanClassError.BaseMiPCArank{j}=mean(ClassError.BaseMiPCArank{j});
-    plot(1:Nselected,MeanClassError.BaseMiPCArank{j});
+    plot(1:304,MeanClassError.BaseMiPCArank{j});
    
     title('Classifier and class error ');
     legend('Classifier: Linear','Classifier: DiagLinear','Classifier: DiagQuadratic');
@@ -361,11 +362,11 @@ for j=1:numel(Classifier)
     ylabel('class error');
     hold on 
 end
-Nselected=150;
 
-%--> THERE IS NO DIFFERENCE WITH PCA AND WITHOUT PCA----%
+NselectedPCArank=100; %linear is still the best one, error is half smaller (0.05)
 
-%average outside CV, put in order all the features from rank feat for the
+
+%% average outside CV, put in order all the features from rank feat for the
 %final plot
 averageFisher.BaseMiPCArank=zeros(size(power_feat.BaseMiPCArank,2),1);
 for i=1:size(power_feat.BaseMiPCArank,2) % each features that we wanna find
@@ -389,6 +390,7 @@ xlabel('frequencies');
 ylabel('channels');
 h=colorbar;
 
+%no difference in the final spectrogram
 
 %% -----
 %%BASELINE vs MI Termination
