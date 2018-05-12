@@ -28,19 +28,30 @@ addpath(genpath('folder_runs'));
 addpath(genpath('data'));
 addpath(genpath('eeglab13_4_4b'));
 addpath(genpath('folder_runs_ak6'));
+addpath(genpath('folder_runs_ak5_Giammarco'));
 
 load('channel_location_16_10-20_mi');
 
 FilesEli={'ak6_run1_offlineMIterm_20181603155146.gdf', 'ak6_run2_offlineMIterm_20181603160414.gdf', 'ak6_run3_offlineMIterm_20181603162521.gdf','ak6_run4_offlineMIterm_20181603164052.gdf'};
-FilesMarco={'ak4_run1_offlineMIterm_20182103093936.gdf', 'ak4_run2_offlineMIterm_20182103095132.gdf', 'ak4_run3_offlineMIterm_20182103101438.gdf', 'ak4_run4_offlineMIterm_20182103102802.gdf'};
+FilesMarco={'ak4_run3.onlineMIterm.20182304112221.gdf', 'ak4_run3_offlineMIterm_20182304105005.gdf', 'ak4_run2.onlineMIterm.20182304110827.gdf'};
 FilesGiam={'ak5_run1_offlineMIterm_20182003154933.gdf', 'ak5_run2_offlineMIterm_20182003160110.gdf','ak5_run3_offlineMIterm_20182003163100.gdf', 'ak5_run4_offlineMIterm_20182003164443.gdf'};
 
-AllFiles=[FilesEli; FilesMarco; FilesGiam];
+if x==1
+    FilesLength=4;
+    Files=FilesEli;
+elseif x==3
+    FilesLength=4;
+    Files=FilesGiam;
+elseif x==2
+    FilesLength=3;
+    Files=FilesMarco;
+else
+    disp('Error in files assignment');
+end
 
+for j=1:FilesLength
 
-for j=1:length(FilesMarco)
-
-filename = (AllFiles{x,j});
+filename = (Files{j});
 [s, h]= sload(filename);
 
 
@@ -112,7 +123,7 @@ figure;
 
 for i=1:16
    
-   Matrix.(channels{i})=Matrix.(channels{i})./FilesMarco;
+   Matrix.(channels{i})=Matrix.(channels{i})./size(Files,2);
    subplot(4,4,i);
    time=t(1,:)+ filt_epoch_MI_CAR_termination.time;
    imagesc('XData',time,'YData',f,'CData', 10*log(Matrix.(channels{i})));
