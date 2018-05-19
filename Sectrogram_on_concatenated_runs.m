@@ -75,7 +75,22 @@ session.Event_pos=h.EVENT.POS;
     session_filt_CAR=session;
     session_filt_CAR.data=signal_car';
     
-% p_welch on car data
+ %% laplacian filter   
+    
+ load('laplacian_16_10-20_mi.mat');
+signal_laplacian = s(:,1:16)*lap; 
+
+session_filt_lap=session;
+session_filt_lap.data=signal_laplacian';
+
+filt_epoch_baseline_lap=epoch_struct(session_filt_lap,200,TimeBeforeEventBaseline,TimeAfterEventBaseline);
+filt_epoch_MI_lap=epoch_struct(session_filt_lap,400,TimeBeforeEventMI,TimeAfterEventMI);
+filt_epoch_MI_lap_termination=epoch_struct(session_filt_lap,555,TimeBeforeEventMItermination,TimeAfterEventMItermination);
+
+ 
+ 
+    
+%% p_welch on car data
 
     filt_epoch_baseline_CAR=epoch_struct(session_filt_CAR,200,TimeBeforeEventBaseline,TimeAfterEventBaseline);
     filt_epoch_MI_CAR=epoch_struct(session_filt_CAR,400,TimeBeforeEventMI,TimeAfterEventMI);
@@ -103,7 +118,7 @@ for i=1:16
    
    channels={'FZ','FC3','FC1','FCz','FC2','FC4','C3','C1', 'Cz', 'C2', 'C4' ,'CP3' ,'CP1' ,'CPZ', 'CP2' ,'CP4'}; 
  
-   [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_CAR, filt_epoch_MI_CAR_termination, i, filt_epoch_baseline_CAR.fs, filt_epoch_baseline_CAR.fs-32, Cyclic_freq);
+   [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_lap, filt_epoch_MI_lap_termination, i, filt_epoch_baseline_lap.fs, filt_epoch_baseline_lap.fs-32, Cyclic_freq);
    
    if j==1
     Matrix.(channels{i})(1:size(spect_for_one_channel,1), 1:size(spect_for_one_channel,2))=0;
@@ -118,25 +133,123 @@ for i=1:16
 end
 
 end
+ 
+% figure;
+% 
+% for i=1:16
+%    
+%     
+%    Matrix.(channels{i})=Matrix.(channels{i})./size(Files,2);
+%    subplot(4,4,i);
+%    time=t(1,:)+ filt_epoch_MI_CAR_termination.time;
+%    imagesc('XData',time,'YData',f,'CData', 10*log(Matrix.(channels{i})));
+%    axis tight;
+%    colorbar;
+%    caxis([-5 5]);
+%    colormap('jet');
+%    % set(h,'ylim',[-20 20]);
+%    xlabel('time[s]');
+%    ylabel('frequency[Hz]');
+%    title((sprintf('Channel %s',filt_epoch_baseline_CAR.channels{1,i})));
+%   
+% end
+
+% suptitle('Spectrogram CAR filtered data - MI termination');
+
+
+%% only plotting the good stuff
 
 figure;
 
+
 for i=1:16
    
-   Matrix.(channels{i})=Matrix.(channels{i})./size(Files,2);
-   subplot(4,4,i);
-   time=t(1,:)+ filt_epoch_MI_CAR_termination.time;
+    if i==7
+    Matrix.(channels{i})=Matrix.(channels{i})./size(Files,2);
+   subplot(2,3,1);
+   time=t(1,:)+ filt_epoch_MI_lap_termination.time;
    imagesc('XData',time,'YData',f,'CData', 10*log(Matrix.(channels{i})));
    axis tight;
    colorbar;
-   % set(h,'ylim',[-20 20]);
+   caxis([-5 5]);
+   colormap('jet');
    xlabel('time[s]');
    ylabel('frequency[Hz]');
-   title((sprintf('Channel %s',filt_epoch_baseline_CAR.channels{1,i})));
+   title((sprintf('Channel %s',filt_epoch_baseline_lap.channels{1,i})));
   
+   end
+    if i==8
+    Matrix.(channels{i})=Matrix.(channels{i})./size(Files,2);
+   subplot(2,3,3);
+   time=t(1,:)+ filt_epoch_MI_lap_termination.time;
+   imagesc('XData',time,'YData',f,'CData', 10*log(Matrix.(channels{i})));
+   axis tight;
+   colorbar;
+   caxis([-5 5]);
+   colormap('jet');
+   xlabel('time[s]');
+   ylabel('frequency[Hz]');
+   title((sprintf('Channel %s',filt_epoch_baseline_lap.channels{1,i})));
+  
+    end
+    
+   
+    if i==12
+    Matrix.(channels{i})=Matrix.(channels{i})./size(Files,2);
+   subplot(2,3,4);
+   time=t(1,:)+ filt_epoch_MI_lap_termination.time;
+   imagesc('XData',time,'YData',f,'CData', 10*log(Matrix.(channels{i})));
+   axis tight;
+   colorbar;
+   caxis([-5 5]);
+   colormap('jet');
+   xlabel('time[s]');
+   ylabel('frequency[Hz]');
+   title((sprintf('Channel %s',filt_epoch_baseline_lap.channels{1,i})));
+  
+    end
+   
+    if i==16
+    Matrix.(channels{i})=Matrix.(channels{i})./size(Files,2);
+   subplot(2,3,6);
+   time=t(1,:)+ filt_epoch_MI_lap_termination.time;
+   imagesc('XData',time,'YData',f,'CData', 10*log(Matrix.(channels{i})));
+   axis tight;
+   colorbar;
+   caxis([-5 5]);
+   colormap('jet');
+   xlabel('time[s]');
+   ylabel('frequency[Hz]');
+   title((sprintf('Channel %s',filt_epoch_baseline_lap.channels{1,i})));
+  
+   end
+    
+   if i==9 
+   Matrix.(channels{i})=Matrix.(channels{i})./size(Files,2);
+   subplot(2,3,2);
+   time=t(1,:)+ filt_epoch_MI_lap_termination.time;
+   imagesc('XData',time,'YData',f,'CData', 10*log(Matrix.(channels{i})));
+   axis tight;
+   colorbar;
+   caxis([-5 5]);
+   colormap('jet');
+   xlabel('time[s]');
+   ylabel('frequency[Hz]');
+   title((sprintf('Channel %s',filt_epoch_baseline_lap.channels{1,i})));
+  
+   end
 end
 
+  % suptitle('Spectrogram offset CAR - Elisabetta');
 
-% suptitle('Spectrogram CAR filtered data - MI termination');
+
+
+
+
+
+
+
+
+
 
 
