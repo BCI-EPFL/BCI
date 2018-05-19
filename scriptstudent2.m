@@ -65,7 +65,7 @@ for j=1:numel(data_filter)
     end
 end
 %% Extract PSD
-s = preprocess_spectrogram(signal_car,params_spectrogram);
+sessionPSD = preprocess_spectrogram(signal_car,params_spectrogram);
 % return session with data in 3D (a new dimension for frequency!)
 
 %elisabetta: all the events starts 1 second before the real one (backwards)
@@ -79,18 +79,20 @@ s = preprocess_spectrogram(signal_car,params_spectrogram);
 runconc.data=[];
 runconc.event.name=[];
 runconc.event.position=[];
-runconc.freq=s{1}.freq;
-for i=1:numel(s)
-    runconc.data=cat(3,runconc.data,s{i}.data);% concatenation of all the 4 runs_data
-    runconc.event.name=cat(1,runconc.event.name,s{i}.event.name);
-    runconc.event.position=cat(1,runconc.event.position,s{i}.event.position+size(runconc.event.position,3));
+runconc.freq=sessionPSD{1}.freq;
+for i=1:numel(sessionPSD)
+    runconc.data=cat(3,runconc.data,sessionPSD{i}.data);% concatenation of all the 4 runs_data
+    runconc.event.name=cat(1,runconc.event.name,sessionPSD{i}.event.name);
+    runconc.event.position=cat(1,runconc.event.position,sessionPSD{i}.event.position+size(runconc.event.position,3));
     
 end
 
 %create epoching 
-epoch_baseline=epoch_window(runconc,200,0,3,params_spectrogram.mlength,params_spectrogram.wshift);
-epoch_MI=epoch_window(runconc,400,0,3,params_spectrogram.mlength,params_spectrogram.wshift);
-epoch_MI_term=epoch_window(runconc,555,0,3,params_spectrogram.mlength,params_spectrogram.wshift);
+TimeBeforeEvent=0;
+TimeAfterEvent=3;
+epoch_baseline=epoch_window(runconc,200,TimeBeforeEvent,TimeAfterEvent,params_spectrogram.mlength,params_spectrogram.wshift);
+epoch_MI=epoch_window(runconc,400,TimeBeforeEvent,TimeAfterEvent,params_spectrogram.mlength,params_spectrogram.wshift);
+epoch_MI_term=epoch_window(runconc,555,TimeBeforeEvent,TimeAfterEvent,params_spectrogram.mlength,params_spectrogram.wshift);
  %% cross validation for each trial to avoid the problem of time-chronological event 
  
 thresholdCross=0.75; %25% of the data is test set for online test
@@ -182,7 +184,7 @@ for i=1:10
           classifier.BaseMi=fitcdiscr(TrainingFolds.BaseMi.data(:,ind.BaseMi(1:Nsel)),TrainingFolds.BaseMi.labels,'discrimtype',Classifier{1,j});
           [yhat.BaseMi,PosteriorProb.BaseMi,~]=predict(classifier.BaseMi,ValidationFold.BaseMi.data(:,ind.BaseMi(1:Nsel)));
           ClassError.BaseMi{j}(i,Nsel)=classerror(ValidationFold.BaseMi.labels,yhat.BaseMi);
-       %Nsel
+          fprintf('iteration number =%d /10, features number :%d/304\n',i,Nsel);
        end
    end
 end
@@ -201,10 +203,10 @@ for j=1:numel(Classifier)
     hold on 
 end
 
-%from the plot the linear shows higher perfomance, let's consider 150
-%features good one with error 0.15
+%from the plot the linear shows higher perfomance, let's consider 40
+%features good one with error 0.2
 
-Nselected=150;   %for Elisabetta
+Nselected=40;   %for Elisabetta
 
 %% average outside CV, put in order all the features from rank feat for the
 %final plot
@@ -246,25 +248,26 @@ for i=1:10
    [TrainingFolds.BaseMi.data, mu.BaseMi, sigma.BaseMi]=zscore(TrainingFolds.BaseMi.data);% Mu is the mean and Sigma is the standard devition
    ValidationFold.BaseMi.data=(ValidationFold.BaseMi.data-mu.BaseMi)./sigma.BaseMi;
    
-   [coeff_train, score_train, variance_train] = pca(TrainingFolds.BaseMi.data(:,ind.BaseMi(i,1:Nselected)));
-   [coeff_val, score_val, variance_val] = pca(ValidationFold.BaseMi.data(:,ind.BaseMi(i,1:Nselected)));
+   [coeff_train, score_train, variance_train] = pca(TrainingFolds.BaseMi.data);
+   %[coeff_val, score_val, variance_val] = pca(ValidationFold.BaseMi.data(:,ind.BaseMi(i,1:Nselected)));
    
    
    %cross validation for choosing the PCA number of features from the selected number 
    %of features by the rank score,
    
    %projection of the pca data
-   TrainingFolds.BaseMi.dataPCA=TrainingFolds.BaseMi.data(:,ind.BaseMi(1:Nselected))*(coeff_train*coeff_train');
-   ValidationFold.BaseMi.dataPCA=ValidationFold.BaseMi.data(:,ind.BaseMi(1:Nselected))*(coeff_val*coeff_val');
+   TrainingFolds.BaseMi.dataPCA=TrainingFolds.BaseMi.data*(coeff_train);
+   ValidationFold.BaseMi.dataPCA=ValidationFold.BaseMi.data*(coeff_train);
    
+   [ind.BaseMiPCA(i,:), power_feat.BaseMiPCA(i,:)] = rankfeat(TrainingFolds.BaseMi.dataPCA, TrainingFolds.BaseMi.labels,  'fisher');
    
    Classifier={'linear', 'diaglinear','diagquadratic'};% quadratic no possible
    for j=1:numel(Classifier)
-       for Nsel=1:Nselected
+       for Nsel=1:size(TrainingFolds.BaseMi.data,2)
           classifier.BaseMiPCA=fitcdiscr(TrainingFolds.BaseMi.dataPCA(:,(1:Nsel)),TrainingFolds.BaseMi.labels,'discrimtype',Classifier{1,j});
-          [yhat.BaseMiPCA,PosteriorProb.BaseMiPCA,~]=predict(classifier.BaseMiPCA,ValidationFold.BaseMi.dataPCA(:,(1:Nsel)));
+          [yhat.BaseMiPCA,PosteriorProb.BaseMiPCA,~]=predict(classifier.BaseMiPCA,ValidationFold.BaseMi.dataPCA(1:Nsel));
           ClassError.BaseMiPCA{j}(i,Nsel)=classerror(ValidationFold.BaseMi.labels,yhat.BaseMiPCA);
-       %Nsel
+          fprintf('iteration number =%d /10, features number :%d/304\n',i,Nsel);
        end
    end
 end
@@ -274,28 +277,28 @@ end
 
 for j=1:numel(Classifier)
     MeanClassError.BaseMiPCA{j}=mean(ClassError.BaseMiPCA{j});
-    plot(1:Nselected,MeanClassError.BaseMiPCA{j});
-   
+    plot(1:size(TrainingFolds.BaseMi.data,2),MeanClassError.BaseMiPCA{j});
+    hold on
     title('Classifier and class error ');
     legend('Classifier: Linear','Classifier: DiagLinear','Classifier: DiagQuadratic');
     xlabel('features');
     ylabel('class error');
-    hold on 
+    
 end
 
 
-NselectedPCA=50; % best is still the linear one,for Elisabetta
+NselectedPCA=20; % best are both linear and diaglinear one,for Elisabetta with error of 0.15
 
-%--> THERE IS NO DIFFERENCE WITH PCA AND WITHOUT PCA----%
 
-%average outside CV, put in order all the features from rank feat for the
+
+%% average outside CV, put in order all the features from rank feat for the
 %final plot
-averageFisher.BaseMi=zeros(size(power_feat.BaseMi,2),1);
-for i=1:size(power_feat.BaseMi,2) % each features that we wanna find
+averageFisher.BaseMiPCA=zeros(size(power_feat.BaseMi,2),1);
+for i=1:size(power_feat.BaseMiPCA,2) % each features that we wanna find
     for j=1:10 %for each fold
-        averageFisher.BaseMi(i)=averageFisher.BaseMi(i)+power_feat.BaseMi(j,ind.BaseMi(j,:)==i);
+        averageFisher.BaseMiPCA(i)=averageFisher.BaseMiPCA(i)+power_feat.BaseMiPCA(j,ind.BaseMiPCA(j,:)==i);
     end
-    averageFisher.BaseMi(i)=averageFisher.BaseMi(i)/10;
+    averageFisher.BaseMiPCA(i)=averageFisher.BaseMiPCA(i)/10;
 end
 
 
@@ -313,84 +316,84 @@ ylabel('channels');
 h=colorbar;
 
 
-%% third case: PCA BEFORE RANK-FEAT
+% %% third case: PCA BEFORE RANK-FEAT
+% 
+% for i=1:10
+%    %definition of the folds
+%    TrainingFolds.BaseMI.data=cat(1,Folds.BaseMi.data{[1:(i-1),(i+1):10]});
+%    TrainingFolds.BaseMi.labels=cat(1,Folds.BaseMi.labels{[1:(i-1),(i+1):10]});
+%    ValidationFold.BaseMi.data=Folds.BaseMi.data{i};
+%    ValidationFold.BaseMi.labels=Folds.BaseMi.labels{i};
+%    
+%    %normalization
+%    [TrainingFolds.BaseMi.data, mu.BaseMi, sigma.BaseMi]=zscore(TrainingFolds.BaseMi.data);% Mu is the mean and Sigma is the standard devition
+%    ValidationFold.BaseMi.data=(ValidationFold.BaseMi.data-mu.BaseMi)./sigma.BaseMi;
+%    
+%    %Fisher's score: we need to save it for every feature for every
+%    %iteration (we will make the average outside the CV loop)
+% 
+%    
+%    [coeff_train, score_train, variance_train] = pca(TrainingFolds.BaseMi.data(:,:));
+%    %[coeff_val, score_val, variance_val] = pca(ValidationFold.BaseMi.data(:,:));
+%    score_val=ValidationFold.BaseMi.data*coeff_train;
+%    
+% %    TrainingFolds.BaseMi.dataPCArank=TrainingFolds.BaseMi.data*(coeff_train*coeff_train.');
+% %    ValidationFold.BaseMi.dataPCArank=ValidationFold.BaseMi.data*(coeff_val*coeff_val.');
+%   [ind.BaseMi.PCArank(i,:), power_feat.BaseMi.PCArank(i,:)] = rankfeat(TrainingFolds.BaseMi.dataPCArank, TrainingFolds.BaseMi.labels,'fisher');
+% 
+% 
+%   Classifier={'linear', 'diaglinear','diagquadratic'};% quadratic no possible
+%    for j=1:numel(Classifier)
+%        for Nsel=1:304 
+%           classifier.BaseMiPCArank=fitcdiscr(TrainingFolds.BaseMi.dataPCArank(:,(1:Nsel)),TrainingFolds.BaseMi.labels,'discrimtype',Classifier{1,j});
+%           [yhat.BaseMiPCArank,PosteriorProb.BaseMiPCArank,~]=predict(classifier.BaseMiPCArank,ValidationFold.BaseMi.dataPCArank(:,(1:Nsel)));
+%           ClassError.BaseMiPCArank{j}(i,Nsel)=classerror(ValidationFold.BaseMi.labels,yhat.BaseMiPCArank);
+%        %Nsel
+%        end
+%    end
+% end
 
-for i=1:10
-   %definition of the folds
-   TrainingFolds.BaseMI.data=cat(1,Folds.BaseMi.data{[1:(i-1),(i+1):10]});
-   TrainingFolds.BaseMi.labels=cat(1,Folds.BaseMi.labels{[1:(i-1),(i+1):10]});
-   ValidationFold.BaseMi.data=Folds.BaseMi.data{i};
-   ValidationFold.BaseMi.labels=Folds.BaseMi.labels{i};
-   
-   %normalization
-   [TrainingFolds.BaseMi.data, mu.BaseMi, sigma.BaseMi]=zscore(TrainingFolds.BaseMi.data);% Mu is the mean and Sigma is the standard devition
-   ValidationFold.BaseMi.data=(ValidationFold.BaseMi.data-mu.BaseMi)./sigma.BaseMi;
-   
-   %Fisher's score: we need to save it for every feature for every
-   %iteration (we will make the average outside the CV loop)
-
-   
-   [coeff_train, score_train, variance_train] = pca(TrainingFolds.BaseMi.data(:,:));
-   %[coeff_val, score_val, variance_val] = pca(ValidationFold.BaseMi.data(:,:));
-   score_val=ValidationFold.BaseMi.data*coeff_train;
-   
-%    TrainingFolds.BaseMi.dataPCArank=TrainingFolds.BaseMi.data*(coeff_train*coeff_train.');
-%    ValidationFold.BaseMi.dataPCArank=ValidationFold.BaseMi.data*(coeff_val*coeff_val.');
-  [ind.BaseMi.PCArank(i,:), power_feat.BaseMi.PCArank(i,:)] = rankfeat(TrainingFolds.BaseMi.dataPCArank, TrainingFolds.BaseMi.labels,'fisher');
-
-
-  Classifier={'linear', 'diaglinear','diagquadratic'};% quadratic no possible
-   for j=1:numel(Classifier)
-       for Nsel=1:304 
-          classifier.BaseMiPCArank=fitcdiscr(TrainingFolds.BaseMi.dataPCArank(:,(1:Nsel)),TrainingFolds.BaseMi.labels,'discrimtype',Classifier{1,j});
-          [yhat.BaseMiPCArank,PosteriorProb.BaseMiPCArank,~]=predict(classifier.BaseMiPCArank,ValidationFold.BaseMi.dataPCArank(:,(1:Nsel)));
-          ClassError.BaseMiPCArank{j}(i,Nsel)=classerror(ValidationFold.BaseMi.labels,yhat.BaseMiPCArank);
-       %Nsel
-       end
-   end
-end
-
-%% mean of the class error to chose the type of classifier with PCA and the number of features--> 
-
-for j=1:numel(Classifier)
-    MeanClassError.BaseMiPCArank{j}=mean(ClassError.BaseMiPCArank{j});
-    plot(1:304,MeanClassError.BaseMiPCArank{j});
-   
-    title('Classifier and class error ');
-    legend('Classifier: Linear','Classifier: DiagLinear','Classifier: DiagQuadratic');
-    xlabel('features');
-    ylabel('class error');
-    hold on 
-end
-
-NselectedPCArank=100; %linear is still the best one, error is half smaller (0.05)
-
-
-%% average outside CV, put in order all the features from rank feat for the
-%final plot
-averageFisher.BaseMiPCArank=zeros(size(power_feat.BaseMiPCArank,2),1);
-for i=1:size(power_feat.BaseMiPCArank,2) % each features that we wanna find
-    for j=1:10 %for each fold
-        averageFisher.BaseMiPCArank(i)=averageFisher.BaseMiPCArank(i)+power_feat.BaseMiPCArank(j,ind.BaseMiPCArank(j,:)==i);
-    end
-    averageFisher.BaseMiPCArank(i)=averageFisher.BaseMiPCArank(i)/10;
-end
+% %% mean of the class error to chose the type of classifier with PCA and the number of features--> 
+% 
+% for j=1:numel(Classifier)
+%     MeanClassError.BaseMiPCArank{j}=mean(ClassError.BaseMiPCArank{j});
+%     plot(1:304,MeanClassError.BaseMiPCArank{j});
+%    
+%     title('Classifier and class error ');
+%     legend('Classifier: Linear','Classifier: DiagLinear','Classifier: DiagQuadratic');
+%     xlabel('features');
+%     ylabel('class error');
+%     hold on 
+% end
+% 
+% NselectedPCArank=100; %linear is still the best one, error is half smaller (0.05)
 
 
-
-%reshaping average Fisher's scores from line to matrix to plot them
-averageFisher.BaseMiPCArank=reshape(averageFisher.BaseMiPCArank,[19 16])'; % reshape in a way to have 16 channels for rows and 19 channles for columns
-
-%plot of Fisher's scores
-figure
-imagesc('XData',[4 40],'YData',[1 16],'CData',averageFisher.BaseMiPCArank);
-title('Fisher scores - baseline vs MI');
-axis tight
-xlabel('frequencies');
-ylabel('channels');
-h=colorbar;
-
-%no difference in the final spectrogram
+% %% average outside CV, put in order all the features from rank feat for the
+% %final plot
+% averageFisher.BaseMiPCArank=zeros(size(power_feat.BaseMiPCArank,2),1);
+% for i=1:size(power_feat.BaseMiPCArank,2) % each features that we wanna find
+%     for j=1:10 %for each fold
+%         averageFisher.BaseMiPCArank(i)=averageFisher.BaseMiPCArank(i)+power_feat.BaseMiPCArank(j,ind.BaseMiPCArank(j,:)==i);
+%     end
+%     averageFisher.BaseMiPCArank(i)=averageFisher.BaseMiPCArank(i)/10;
+% end
+% 
+% 
+% 
+% %reshaping average Fisher's scores from line to matrix to plot them
+% averageFisher.BaseMiPCArank=reshape(averageFisher.BaseMiPCArank,[19 16])'; % reshape in a way to have 16 channels for rows and 19 channles for columns
+% 
+% %plot of Fisher's scores
+% figure
+% imagesc('XData',[4 40],'YData',[1 16],'CData',averageFisher.BaseMiPCArank);
+% title('Fisher scores - baseline vs MI');
+% axis tight
+% xlabel('frequencies');
+% ylabel('channels');
+% h=colorbar;
+% 
+% %no difference in the final spectrogram
 
 %% -----
 %%BASELINE vs MI Termination
