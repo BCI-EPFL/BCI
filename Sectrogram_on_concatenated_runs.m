@@ -98,17 +98,57 @@ filt_epoch_MI_lap_termination=epoch_struct(session_filt_lap,555,TimeBeforeEventM
     
     for i=1:size(chanlocs16,2)
         [pwelch_car_bas_onechannel{i},freq_1]=pwelch_for_each_channel(i,filt_epoch_baseline_CAR,500,session_filt_CAR.fs);
-        [pwelch_car_MI_onechannel{i},freq_2]=pwelch_for_each_channel(i,filt_epoch_MI_CAR,500,session_filt_CAR.fs);
+        [pwelch_car_MI_onechannel{i},freq_2]=pwelch_for_each_channel(i,filt_epoch_MI_CAR_termination,500,session_filt_CAR.fs);
         
         if j==1
         
-        subplot(4,4,i)
+            if i==7
+            
+        subplot(2,3,1)
         plot(freq_1(1:55),10*log10(pwelch_car_bas_onechannel{i}(1:55)),freq_2(1:55),10*log10(pwelch_car_MI_onechannel{i}(1:55)))
         xlabel('Frequency [Hz]');
         ylabel('PSD [dB]');
         title(sprintf('SPD comparison for channels %s',filt_epoch_baseline_CAR.channels{1,i}));
         legend('baseline','MI');
-        
+            end
+            
+            if i==11
+               subplot(2,3,3)
+        plot(freq_1(1:55),10*log10(pwelch_car_bas_onechannel{i}(1:55)),freq_2(1:55),10*log10(pwelch_car_MI_onechannel{i}(1:55)))
+        xlabel('Frequency [Hz]');
+        ylabel('PSD [dB]');
+        title(sprintf('SPD comparison for channels %s',filt_epoch_baseline_CAR.channels{1,i}));
+        legend('baseline','MI'); 
+            end
+            
+            if i==12
+                
+               subplot(2,3,4)
+        plot(freq_1(1:55),10*log10(pwelch_car_bas_onechannel{i}(1:55)),freq_2(1:55),10*log10(pwelch_car_MI_onechannel{i}(1:55)))
+        xlabel('Frequency [Hz]');
+        ylabel('PSD [dB]');
+        title(sprintf('SPD comparison for channels %s',filt_epoch_baseline_CAR.channels{1,i}));
+        legend('baseline','MI'); 
+            end
+            
+            if i==16
+            
+               subplot(2,3,6)
+        plot(freq_1(1:55),10*log10(pwelch_car_bas_onechannel{i}(1:55)),freq_2(1:55),10*log10(pwelch_car_MI_onechannel{i}(1:55)))
+        xlabel('Frequency [Hz]');
+        ylabel('PSD [dB]');
+        title(sprintf('SPD comparison for channels %s',filt_epoch_baseline_CAR.channels{1,i}));
+        legend('baseline','MI'); 
+            end
+            
+            if i==9
+               subplot(2,3,2)
+        plot(freq_1(1:55),10*log10(pwelch_car_bas_onechannel{i}(1:55)),freq_2(1:55),10*log10(pwelch_car_MI_onechannel{i}(1:55)))
+        xlabel('Frequency [Hz]');
+        ylabel('PSD [dB]');
+        title(sprintf('SPD comparison for channels %s',filt_epoch_baseline_CAR.channels{1,i}));
+        legend('baseline','MI'); 
+            end
         end
     end
 
@@ -118,7 +158,7 @@ for i=1:16
    
    channels={'FZ','FC3','FC1','FCz','FC2','FC4','C3','C1', 'Cz', 'C2', 'C4' ,'CP3' ,'CP1' ,'CPZ', 'CP2' ,'CP4'}; 
  
-   [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_lap, filt_epoch_MI_lap_termination, i, filt_epoch_baseline_lap.fs, filt_epoch_baseline_lap.fs-32, Cyclic_freq);
+   [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_CAR, filt_epoch_MI_CAR, i, filt_epoch_baseline_CAR.fs, filt_epoch_baseline_CAR.fs-32, Cyclic_freq);
    
    if j==1
     Matrix.(channels{i})(1:size(spect_for_one_channel,1), 1:size(spect_for_one_channel,2))=0;
@@ -156,6 +196,19 @@ end
 
 % suptitle('Spectrogram CAR filtered data - MI termination');
 
+%% saving for the grand average
+
+if x==1
+    Spectrogram_Eli=Matrix;
+    save('Spectrogram_Eli.mat', 'Spectrogram_Eli');
+elseif x==2
+    Spectrogram_Marco=Matrix;
+    save('Spectrogram_Marco.mat', 'Spectrogram_Marco');
+elseif x==3
+    Spectrogram_Giamm=Matrix;
+    save('Spectrogram_Giamm.mat', 'Spectrogram_Giamm');
+end
+
 
 %% only plotting the good stuff
 
@@ -167,7 +220,7 @@ for i=1:16
     if i==7
     Matrix.(channels{i})=Matrix.(channels{i})./size(Files,2);
    subplot(2,3,1);
-   time=t(1,:)+ filt_epoch_MI_lap_termination.time;
+   time=t(1,:)+ filt_epoch_MI_CAR.time;
    imagesc('XData',time,'YData',f,'CData', 10*log(Matrix.(channels{i})));
    axis tight;
    colorbar;
@@ -175,13 +228,13 @@ for i=1:16
    colormap('jet');
    xlabel('time[s]');
    ylabel('frequency[Hz]');
-   title((sprintf('Channel %s',filt_epoch_baseline_lap.channels{1,i})));
+   title((sprintf('Channel %s',filt_epoch_baseline_CAR.channels{1,i})));
   
    end
-    if i==8
+    if i==11
     Matrix.(channels{i})=Matrix.(channels{i})./size(Files,2);
    subplot(2,3,3);
-   time=t(1,:)+ filt_epoch_MI_lap_termination.time;
+   time=t(1,:)+ filt_epoch_MI_CAR.time;
    imagesc('XData',time,'YData',f,'CData', 10*log(Matrix.(channels{i})));
    axis tight;
    colorbar;
@@ -189,7 +242,7 @@ for i=1:16
    colormap('jet');
    xlabel('time[s]');
    ylabel('frequency[Hz]');
-   title((sprintf('Channel %s',filt_epoch_baseline_lap.channels{1,i})));
+   title((sprintf('Channel %s',filt_epoch_baseline_CAR.channels{1,i})));
   
     end
     
@@ -197,7 +250,7 @@ for i=1:16
     if i==12
     Matrix.(channels{i})=Matrix.(channels{i})./size(Files,2);
    subplot(2,3,4);
-   time=t(1,:)+ filt_epoch_MI_lap_termination.time;
+   time=t(1,:)+ filt_epoch_MI_CAR.time;
    imagesc('XData',time,'YData',f,'CData', 10*log(Matrix.(channels{i})));
    axis tight;
    colorbar;
@@ -205,14 +258,14 @@ for i=1:16
    colormap('jet');
    xlabel('time[s]');
    ylabel('frequency[Hz]');
-   title((sprintf('Channel %s',filt_epoch_baseline_lap.channels{1,i})));
+   title((sprintf('Channel %s',filt_epoch_baseline_CAR.channels{1,i})));
   
     end
    
     if i==16
     Matrix.(channels{i})=Matrix.(channels{i})./size(Files,2);
    subplot(2,3,6);
-   time=t(1,:)+ filt_epoch_MI_lap_termination.time;
+   time=t(1,:)+ filt_epoch_MI_CAR.time;
    imagesc('XData',time,'YData',f,'CData', 10*log(Matrix.(channels{i})));
    axis tight;
    colorbar;
@@ -220,14 +273,14 @@ for i=1:16
    colormap('jet');
    xlabel('time[s]');
    ylabel('frequency[Hz]');
-   title((sprintf('Channel %s',filt_epoch_baseline_lap.channels{1,i})));
+   title((sprintf('Channel %s',filt_epoch_baseline_CAR.channels{1,i})));
   
    end
     
    if i==9 
    Matrix.(channels{i})=Matrix.(channels{i})./size(Files,2);
    subplot(2,3,2);
-   time=t(1,:)+ filt_epoch_MI_lap_termination.time;
+   time=t(1,:)+ filt_epoch_MI_CAR.time;
    imagesc('XData',time,'YData',f,'CData', 10*log(Matrix.(channels{i})));
    axis tight;
    colorbar;
@@ -235,12 +288,116 @@ for i=1:16
    colormap('jet');
    xlabel('time[s]');
    ylabel('frequency[Hz]');
-   title((sprintf('Channel %s',filt_epoch_baseline_lap.channels{1,i})));
+   title((sprintf('Channel %s',filt_epoch_baseline_CAR.channels{1,i})));
   
    end
 end
 
   % suptitle('Spectrogram offset CAR - Elisabetta');
+
+%% grand average
+  
+load('Spectrogram_Eli.mat');
+load('Spectrogram_Marco.mat');
+load('Spectrogram_Giamm.mat');
+
+Cz_avg=(Spectrogram_Eli.Cz./4+Spectrogram_Marco.Cz./3+Spectrogram_Giamm.Cz./4)./3;
+C3_avg=(Spectrogram_Eli.C3./4+Spectrogram_Marco.C3./3+Spectrogram_Giamm.C3./4)./3;
+C4_avg=(Spectrogram_Eli.C4./4+Spectrogram_Marco.C4./3+Spectrogram_Giamm.C4./4)./3;
+CP3_avg=(Spectrogram_Eli.CP3./4+Spectrogram_Marco.CP3./3+Spectrogram_Giamm.CP3./4)./3;
+CP4_avg=(Spectrogram_Eli.CP4./4+Spectrogram_Marco.CP4./3+Spectrogram_Giamm.CP4./4)./3;
+
+
+%% plotting the good stuff
+
+channels={'FZ','FC3','FC1','FCz','FC2','FC4','C3','C1', 'Cz', 'C2', 'C4' ,'CP3' ,'CP1' ,'CPZ', 'CP2' ,'CP4'}; 
+ 
+figure;
+
+for i=1:16
+   
+    if i==7
+   subplot(2,3,1);
+   time=t(1,:)+ filt_epoch_MI_CAR.time;
+   imagesc('XData',time,'YData',f,'CData', 10*log(C3_avg));
+   axis tight;
+   colorbar;
+   caxis([-5 5]);
+   colormap('jet');
+   xlabel('time[s]');
+   ylabel('frequency[Hz]');
+   title((sprintf('Channel %s',filt_epoch_baseline_CAR.channels{1,i})));
+  
+   end
+    if i==11
+   subplot(2,3,3);
+   time=t(1,:)+ filt_epoch_MI_CAR.time;
+   imagesc('XData',time,'YData',f,'CData', 10*log(C4_avg));
+   axis tight;
+   colorbar;
+   caxis([-5 5]);
+   colormap('jet');
+   xlabel('time[s]');
+   ylabel('frequency[Hz]');
+   title((sprintf('Channel %s',filt_epoch_baseline_CAR.channels{1,i})));
+  
+    end
+    
+   
+    if i==12
+   subplot(2,3,4);
+   time=t(1,:)+ filt_epoch_MI_CAR.time;
+   imagesc('XData',time,'YData',f,'CData', 10*log(CP3_avg));
+   axis tight;
+   colorbar;
+   caxis([-5 5]);
+   colormap('jet');
+   xlabel('time[s]');
+   ylabel('frequency[Hz]');
+   title((sprintf('Channel %s',filt_epoch_baseline_CAR.channels{1,i})));
+  
+    end
+   
+    if i==16
+   subplot(2,3,6);
+   time=t(1,:)+ filt_epoch_MI_CAR.time;
+   imagesc('XData',time,'YData',f,'CData', 10*log(CP4_avg));
+   axis tight;
+   colorbar;
+   caxis([-5 5]);
+   colormap('jet');
+   xlabel('time[s]');
+   ylabel('frequency[Hz]');
+   title((sprintf('Channel %s',filt_epoch_baseline_CAR.channels{1,i})));
+  
+   end
+    
+   if i==9 
+   subplot(2,3,2);
+   time=t(1,:)+ filt_epoch_MI_CAR.time;
+   imagesc('XData',time,'YData',f,'CData', 10*log(Cz_avg));
+   axis tight;
+   colorbar;
+   caxis([-5 5]);
+   colormap('jet');
+   xlabel('time[s]');
+   ylabel('frequency[Hz]');
+   title((sprintf('Channel %s',filt_epoch_baseline_CAR.channels{1,i})));
+  
+   end
+end
+
+  % suptitle('Spectrogram offset CAR - Elisabetta');
+
+
+
+
+
+
+
+
+
+
 
 
 
