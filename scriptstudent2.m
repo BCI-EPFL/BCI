@@ -1,5 +1,6 @@
 clear;
 close;
+clc;
 
 addpath(genpath('biosig'));
 addpath(genpath('folder_runs'));
@@ -90,9 +91,9 @@ end
 %create epoching 
 TimeBeforeEvent=0;
 TimeAfterEvent=3;
-epoch_baseline=epoch_window(runconc,200,TimeBeforeEvent,TimeAfterEvent,params_spectrogram.mlength,params_spectrogram.wshift);
-epoch_MI=epoch_window(runconc,400,TimeBeforeEvent,TimeAfterEvent,params_spectrogram.mlength,params_spectrogram.wshift);
-epoch_MI_term=epoch_window(runconc,555,TimeBeforeEvent,TimeAfterEvent,params_spectrogram.mlength,params_spectrogram.wshift);
+epoch_baseline=epoch_window(runconc,200,TimeAfterEvent,params_spectrogram.mlength,params_spectrogram.wshift);
+epoch_MI=epoch_window(runconc,400,TimeAfterEvent,params_spectrogram.mlength,params_spectrogram.wshift);
+epoch_MI_term=epoch_window(runconc,555,TimeAfterEvent,params_spectrogram.mlength,params_spectrogram.wshift);
  %% cross validation for each trial to avoid the problem of time-chronological event 
  
 thresholdCross=0.75; %25% of the data is test set for online test
@@ -136,7 +137,6 @@ Folds.BaseMi.labels{j}=Folds.Base.labels;
 Folds.Base.data=[];
 Folds.Base.labels=[];
 end
- 
 
 %% marco 
 % NoTrainingSamplesPerClass=thresholdCross*size(epoch_baseline.samples,3);
@@ -180,7 +180,7 @@ for i=1:10
    Classifier={'linear', 'diaglinear','diagquadratic'}; %the quadratic can not be performed
    
    for j=1:numel(Classifier)
-       for Nsel=1:size(TrainingFolds.BaseMi.data,2)
+       for Nsel=1:50
           classifier.BaseMi=fitcdiscr(TrainingFolds.BaseMi.data(:,ind.BaseMi(1:Nsel)),TrainingFolds.BaseMi.labels,'discrimtype',Classifier{1,j});
           [yhat.BaseMi,PosteriorProb.BaseMi,~]=predict(classifier.BaseMi,ValidationFold.BaseMi.data(:,ind.BaseMi(1:Nsel)));
           ClassError.BaseMi{j}(i,Nsel)=classerror(ValidationFold.BaseMi.labels,yhat.BaseMi);
@@ -194,7 +194,7 @@ end
 
 for j=1:numel(Classifier)
     MeanClassError.BaseMi{j}=mean(ClassError.BaseMi{j});
-    plot(1:304,MeanClassError.BaseMi{j});
+    plot(1:50,MeanClassError.BaseMi{j});
    
     title('Classifier and class error ');
     legend('Classifier: Linear','Classifier: DiagLinear','Classifier: DiagQuadratic');
@@ -218,8 +218,6 @@ for i=1:size(power_feat.BaseMi,2) % each features that we wanna find
     averageFisher.BaseMi(i)=averageFisher.BaseMi(i)/10;
 end
 
-
-
 %reshaping average Fisher's scores from line to matrix to plot them
 averageFisher.BaseMi=reshape(averageFisher.BaseMi,[19 16])'; % reshape in a way to have 16 channels for rows and 19 channles for columns
 
@@ -232,89 +230,89 @@ xlabel('frequencies');
 ylabel('channels');
 h=colorbar;
 
-%% --> si PCA and rank-feat: Elisabetta
-
-
-%let's apply pca on the number of features reduces:N selected
-
-for i=1:10
-   %definition of the folds
-   TrainingFolds.BaseMi.data=cat(1,Folds.BaseMi.data{[1:(i-1),(i+1):10]});
-   TrainingFolds.BaseMi.labels=cat(1,Folds.BaseMi.labels{[1:(i-1),(i+1):10]});
-   ValidationFold.BaseMi.data=Folds.BaseMi.data{i};
-   ValidationFold.BaseMi.labels=Folds.BaseMi.labels{i};
-   
-   %normalization
-   [TrainingFolds.BaseMi.data, mu.BaseMi, sigma.BaseMi]=zscore(TrainingFolds.BaseMi.data);% Mu is the mean and Sigma is the standard devition
-   ValidationFold.BaseMi.data=(ValidationFold.BaseMi.data-mu.BaseMi)./sigma.BaseMi;
-   
-   [coeff_train, score_train, variance_train] = pca(TrainingFolds.BaseMi.data);
-   %[coeff_val, score_val, variance_val] = pca(ValidationFold.BaseMi.data(:,ind.BaseMi(i,1:Nselected)));
-   
-   
-   %cross validation for choosing the PCA number of features from the selected number 
-   %of features by the rank score,
-   
-   %projection of the pca data
-   TrainingFolds.BaseMi.dataPCA=TrainingFolds.BaseMi.data*(coeff_train);
-   ValidationFold.BaseMi.dataPCA=ValidationFold.BaseMi.data*(coeff_train);
-   
-   [ind.BaseMiPCA(i,:), power_feat.BaseMiPCA(i,:)] = rankfeat(TrainingFolds.BaseMi.dataPCA, TrainingFolds.BaseMi.labels,  'fisher');
-   
-   Classifier={'linear', 'diaglinear','diagquadratic'};% quadratic no possible
-   for j=1:numel(Classifier)
-       for Nsel=1:size(TrainingFolds.BaseMi.data,2)
-          classifier.BaseMiPCA=fitcdiscr(TrainingFolds.BaseMi.dataPCA(:,(1:Nsel)),TrainingFolds.BaseMi.labels,'discrimtype',Classifier{1,j});
-          [yhat.BaseMiPCA,PosteriorProb.BaseMiPCA,~]=predict(classifier.BaseMiPCA,ValidationFold.BaseMi.dataPCA(1:Nsel));
-          ClassError.BaseMiPCA{j}(i,Nsel)=classerror(ValidationFold.BaseMi.labels,yhat.BaseMiPCA);
-          fprintf('iteration number =%d /10, features number :%d/304\n',i,Nsel);
-       end
-   end
-end
-
-%% mean of the class error to chose the type of classifier with PCA and the number of features--> 
-
-
-for j=1:numel(Classifier)
-    MeanClassError.BaseMiPCA{j}=mean(ClassError.BaseMiPCA{j});
-    plot(1:size(TrainingFolds.BaseMi.data,2),MeanClassError.BaseMiPCA{j});
-    hold on
-    title('Classifier and class error ');
-    legend('Classifier: Linear','Classifier: DiagLinear','Classifier: DiagQuadratic');
-    xlabel('features');
-    ylabel('class error');
-    
-end
-
-
-NselectedPCA=20; % best are both linear and diaglinear one,for Elisabetta with error of 0.15
-
-
-
-%% average outside CV, put in order all the features from rank feat for the
-%final plot
-averageFisher.BaseMiPCA=zeros(size(power_feat.BaseMi,2),1);
-for i=1:size(power_feat.BaseMiPCA,2) % each features that we wanna find
-    for j=1:10 %for each fold
-        averageFisher.BaseMiPCA(i)=averageFisher.BaseMiPCA(i)+power_feat.BaseMiPCA(j,ind.BaseMiPCA(j,:)==i);
-    end
-    averageFisher.BaseMiPCA(i)=averageFisher.BaseMiPCA(i)/10;
-end
-
-
-
-%reshaping average Fisher's scores from line to matrix to plot them
-averageFisher.BaseMi=reshape(averageFisher.BaseMi,[19 16])'; % reshape in a way to have 16 channels for rows and 19 channles for columns
-
-%plot of Fisher's scores
-figure
-imagesc('XData',[4 40],'YData',[1 16],'CData',averageFisher.BaseMi);
-title('Fisher scores - baseline vs MI');
-axis tight
-xlabel('frequencies');
-ylabel('channels');
-h=colorbar;
-
+% %% --> si PCA and rank-feat: Elisabetta
+% 
+% 
+% %let's apply pca on the number of features reduces:N selected
+% 
+% for i=1:10
+%    %definition of the folds
+%    TrainingFolds.BaseMi.data=cat(1,Folds.BaseMi.data{[1:(i-1),(i+1):10]});
+%    TrainingFolds.BaseMi.labels=cat(1,Folds.BaseMi.labels{[1:(i-1),(i+1):10]});
+%    ValidationFold.BaseMi.data=Folds.BaseMi.data{i};
+%    ValidationFold.BaseMi.labels=Folds.BaseMi.labels{i};
+%    
+%    %normalization
+%    [TrainingFolds.BaseMi.data, mu.BaseMi, sigma.BaseMi]=zscore(TrainingFolds.BaseMi.data);% Mu is the mean and Sigma is the standard devition
+%    ValidationFold.BaseMi.data=(ValidationFold.BaseMi.data-mu.BaseMi)./sigma.BaseMi;
+%    
+%    [coeff_train, score_train, variance_train] = pca(TrainingFolds.BaseMi.data);
+%    %[coeff_val, score_val, variance_val] = pca(ValidationFold.BaseMi.data(:,ind.BaseMi(i,1:Nselected)));
+%    
+%    
+%    %cross validation for choosing the PCA number of features from the selected number 
+%    %of features by the rank score,
+%    
+%    %projection of the pca data
+%    TrainingFolds.BaseMi.dataPCA=TrainingFolds.BaseMi.data*(coeff_train);
+%    ValidationFold.BaseMi.dataPCA=ValidationFold.BaseMi.data*(coeff_train);
+%    
+%    [ind.BaseMiPCA(i,:), power_feat.BaseMiPCA(i,:)] = rankfeat(TrainingFolds.BaseMi.dataPCA, TrainingFolds.BaseMi.labels,  'fisher');
+%    
+%    Classifier={'linear', 'diaglinear','diagquadratic'};% quadratic no possible
+%    for j=1:numel(Classifier)
+%        for Nsel=1:size(TrainingFolds.BaseMi.data,2)
+%           classifier.BaseMiPCA=fitcdiscr(TrainingFolds.BaseMi.dataPCA(:,(1:Nsel)),TrainingFolds.BaseMi.labels,'discrimtype',Classifier{1,j});
+%           [yhat.BaseMiPCA,PosteriorProb.BaseMiPCA,~]=predict(classifier.BaseMiPCA,ValidationFold.BaseMi.dataPCA(1:Nsel));
+%           ClassError.BaseMiPCA{j}(i,Nsel)=classerror(ValidationFold.BaseMi.labels,yhat.BaseMiPCA);
+%           fprintf('iteration number =%d /10, features number :%d/304\n',i,Nsel);
+%        end
+%    end
+% end
+% 
+% %% mean of the class error to chose the type of classifier with PCA and the number of features--> 
+% 
+% 
+% for j=1:numel(Classifier)
+%     MeanClassError.BaseMiPCA{j}=mean(ClassError.BaseMiPCA{j});
+%     plot(1:size(TrainingFolds.BaseMi.data,2),MeanClassError.BaseMiPCA{j});
+%     hold on
+%     title('Classifier and class error ');
+%     legend('Classifier: Linear','Classifier: DiagLinear','Classifier: DiagQuadratic');
+%     xlabel('features');
+%     ylabel('class error');
+%     
+% end
+% 
+% 
+% NselectedPCA=20; % best are both linear and diaglinear one,for Elisabetta with error of 0.15
+% 
+% 
+% 
+% %% average outside CV, put in order all the features from rank feat for the
+% %final plot
+% averageFisher.BaseMiPCA=zeros(size(power_feat.BaseMi,2),1);
+% for i=1:size(power_feat.BaseMiPCA,2) % each features that we wanna find
+%     for j=1:10 %for each fold
+%         averageFisher.BaseMiPCA(i)=averageFisher.BaseMiPCA(i)+power_feat.BaseMiPCA(j,ind.BaseMiPCA(j,:)==i);
+%     end
+%     averageFisher.BaseMiPCA(i)=averageFisher.BaseMiPCA(i)/10;
+% end
+% 
+% 
+% 
+% %reshaping average Fisher's scores from line to matrix to plot them
+% averageFisher.BaseMi=reshape(averageFisher.BaseMi,[19 16])'; % reshape in a way to have 16 channels for rows and 19 channles for columns
+% 
+% %plot of Fisher's scores
+% figure
+% imagesc('XData',[4 40],'YData',[1 16],'CData',averageFisher.BaseMi);
+% title('Fisher scores - baseline vs MI');
+% axis tight
+% xlabel('frequencies');
+% ylabel('channels');
+% h=colorbar;
+% 
 
 % %% third case: PCA BEFORE RANK-FEAT
 % 
@@ -396,74 +394,74 @@ h=colorbar;
 % %no difference in the final spectrogram
 
 %% -----
-%%BASELINE vs MI Termination
-
-EpochTraining.BaseMITerm.data=cat(3, epoch_baseline.samples(:,:,1:thresholdCross*size(epoch_baseline.samples,3)), epoch_MI_term.samples(:,:,1:thresholdCross*size(epoch_MI_term.samples,3)));
-EpochTraining.BaseMITerm.labels=cat(1,epoch_baseline.labels(1:thresholdCross*size(epoch_baseline.labels,1)), epoch_MI_term.labels(1:thresholdCross*size(epoch_MI_term.labels,1)));
- 
-EpochTesting.BaseMITerm.data=cat(3, epoch_baseline.samples(:,:,(thresholdCross*size(epoch_baseline.samples,3)+1):end), epoch_MI_term.samples(:,:,(thresholdCross*size(epoch_MI_term.samples,3)+1):end));
-EpochTesting.BaseMITerm.labels=cat(1, epoch_baseline.labels((thresholdCross*size(epoch_baseline.samples,1)+1):end), epoch_MI_term.labels((thresholdCross*size(epoch_MI_term.samples,1)+1):end));
-
-NoTrainingSamplesPerClass=thresholdCross*size(epoch_baseline.samples,3);
-TrialsPerFold=NoTrainingSamplesPerClass/(33*10);  %33=no. of windows per trial, 10=folds cv;
-for i=1:10
-    contStart=(TrialsPerFold*(i-1)*33+1);
-    contEnd=TrialsPerFold*i*33;
-    Folds.BaseMITerm.data{i}=cat(3,EpochTraining.BaseMITerm.data(:,:,contStart:contEnd),EpochTraining.BaseMITerm.data(:,:,(contStart+NoTrainingSamplesPerClass):(contEnd+NoTrainingSamplesPerClass)));
-    Folds.BaseMITerm.labels{i}=cat(1,EpochTraining.BaseMITerm.labels(contStart:contEnd),EpochTraining.BaseMITerm.labels((contStart+NoTrainingSamplesPerClass):(contEnd+NoTrainingSamplesPerClass)));
-end
-
-%Now we need to transform every sample from a matrix to a line (because
-%rankfeat wants lines)
-a=Folds; 
-Folds.BaseMITerm=rmfield(Folds.BaseMITerm,'data');
-for i=1:10
-    for j=1:size(a.BaseMITerm.data{1,i},3)
-        Folds.BaseMITerm.data{1,i}(j,:)=reshape(a.BaseMITerm.data{1,i}(:,:,j)',[1,16*19]); 
-    end    
-end
-
-%---
-%Proper CV
-for i=1:10
-   %definition of the folds
-   TrainingFolds.BaseMITerm.data=cat(1,Folds.BaseMITerm.data{[1:(i-1),(i+1):10]});
-   TrainingFolds.BaseMITerm.labels=cat(1,Folds.BaseMITerm.labels{[1:(i-1),(i+1):10]});
-   ValidationFold.BaseMITerm.data=Folds.BaseMITerm.data{i};
-   ValidationFold.BaseMITerm.labels=Folds.BaseMITerm.labels{i};
-   
-   %normalization
-   [TrainingFolds.BaseMITerm.data, mu.BaseMITerm, sigma.BaseMITerm]=zscore(TrainingFolds.BaseMITerm.data);
-   ValidationFold.BaseMITerm.data=(ValidationFold.BaseMITerm.data-mu.BaseMITerm)./sigma.BaseMITerm;
-   
-   %Fisher's score: we need to save it for every feature for every
-   %iteration (we will make the average outside the CV loop)
-   [ind.BaseMITerm(i,:), power_feat.BaseMITerm(i,:)] = rankfeat(TrainingFolds.BaseMITerm.data, TrainingFolds.BaseMITerm.labels,  'fisher');
-
-   %loop over the number of features
-   for Nsel=[1:14,15:5:50,75:25:304]
-       classifier.BaseMITerm=fitcdiscr(TrainingFolds.BaseMITerm.data(:,ind.BaseMITerm(1:Nsel)),TrainingFolds.BaseMITerm.labels,'discrimtype','linear');
-       [yhat.BaseMITerm,PosteriorProb.BaseMITerm,~]=predict(classifier.BaseMITerm,ValidationFold.BaseMITerm.data(:,ind.BaseMITerm(1:Nsel)));
-       ClassError.BaseMITerm(i,Nsel)=classerror(ValidationFold.BaseMITerm.labels,yhat.BaseMITerm);
-       Nsel
-   end
-end
-
-MeanClassError.BaseMITerm=mean(ClassError.BaseMITerm);
-
-%average outside CV
-averageFisher.BaseMITerm=zeros(size(power_feat.BaseMITerm,2),1);
-for i=1:size(power_feat.BaseMITerm,2)
-    for j=1:10
-        averageFisher.BaseMITerm(i)=averageFisher.BaseMITerm(i)+power_feat.BaseMITerm(j,ind.BaseMITerm(j,:)==i);
-    end
-    averageFisher.BaseMITerm(i)=averageFisher.BaseMITerm(i)/10;
-end
-
-%reshaping average Fisher's scores from line to matrix to plot them
-averageFisher.BaseMITerm=reshape(averageFisher.BaseMITerm,[19 16])';
-
-%plot of Fisher's scores.
-figure
-imagesc([4 40],[1 16],averageFisher.BaseMITerm)
-title('Fisher scores - baseline vs MI termination');
+% %%BASELINE vs MI Termination
+% 
+% EpochTraining.BaseMITerm.data=cat(3, epoch_baseline.samples(:,:,1:thresholdCross*size(epoch_baseline.samples,3)), epoch_MI_term.samples(:,:,1:thresholdCross*size(epoch_MI_term.samples,3)));
+% EpochTraining.BaseMITerm.labels=cat(1,epoch_baseline.labels(1:thresholdCross*size(epoch_baseline.labels,1)), epoch_MI_term.labels(1:thresholdCross*size(epoch_MI_term.labels,1)));
+%  
+% EpochTesting.BaseMITerm.data=cat(3, epoch_baseline.samples(:,:,(thresholdCross*size(epoch_baseline.samples,3)+1):end), epoch_MI_term.samples(:,:,(thresholdCross*size(epoch_MI_term.samples,3)+1):end));
+% EpochTesting.BaseMITerm.labels=cat(1, epoch_baseline.labels((thresholdCross*size(epoch_baseline.samples,1)+1):end), epoch_MI_term.labels((thresholdCross*size(epoch_MI_term.samples,1)+1):end));
+% 
+% NoTrainingSamplesPerClass=thresholdCross*size(epoch_baseline.samples,3);
+% TrialsPerFold=NoTrainingSamplesPerClass/(33*10);  %33=no. of windows per trial, 10=folds cv;
+% for i=1:10
+%     contStart=(TrialsPerFold*(i-1)*33+1);
+%     contEnd=TrialsPerFold*i*33;
+%     Folds.BaseMITerm.data{i}=cat(3,EpochTraining.BaseMITerm.data(:,:,contStart:contEnd),EpochTraining.BaseMITerm.data(:,:,(contStart+NoTrainingSamplesPerClass):(contEnd+NoTrainingSamplesPerClass)));
+%     Folds.BaseMITerm.labels{i}=cat(1,EpochTraining.BaseMITerm.labels(contStart:contEnd),EpochTraining.BaseMITerm.labels((contStart+NoTrainingSamplesPerClass):(contEnd+NoTrainingSamplesPerClass)));
+% end
+% 
+% %Now we need to transform every sample from a matrix to a line (because
+% %rankfeat wants lines)
+% a=Folds; 
+% Folds.BaseMITerm=rmfield(Folds.BaseMITerm,'data');
+% for i=1:10
+%     for j=1:size(a.BaseMITerm.data{1,i},3)
+%         Folds.BaseMITerm.data{1,i}(j,:)=reshape(a.BaseMITerm.data{1,i}(:,:,j)',[1,16*19]); 
+%     end    
+% end
+% 
+% %---
+% %Proper CV
+% for i=1:10
+%    %definition of the folds
+%    TrainingFolds.BaseMITerm.data=cat(1,Folds.BaseMITerm.data{[1:(i-1),(i+1):10]});
+%    TrainingFolds.BaseMITerm.labels=cat(1,Folds.BaseMITerm.labels{[1:(i-1),(i+1):10]});
+%    ValidationFold.BaseMITerm.data=Folds.BaseMITerm.data{i};
+%    ValidationFold.BaseMITerm.labels=Folds.BaseMITerm.labels{i};
+%    
+%    %normalization
+%    [TrainingFolds.BaseMITerm.data, mu.BaseMITerm, sigma.BaseMITerm]=zscore(TrainingFolds.BaseMITerm.data);
+%    ValidationFold.BaseMITerm.data=(ValidationFold.BaseMITerm.data-mu.BaseMITerm)./sigma.BaseMITerm;
+%    
+%    %Fisher's score: we need to save it for every feature for every
+%    %iteration (we will make the average outside the CV loop)
+%    [ind.BaseMITerm(i,:), power_feat.BaseMITerm(i,:)] = rankfeat(TrainingFolds.BaseMITerm.data, TrainingFolds.BaseMITerm.labels,  'fisher');
+% 
+%    %loop over the number of features
+%    for Nsel=[1:14,15:5:50,75:25:304]
+%        classifier.BaseMITerm=fitcdiscr(TrainingFolds.BaseMITerm.data(:,ind.BaseMITerm(1:Nsel)),TrainingFolds.BaseMITerm.labels,'discrimtype','linear');
+%        [yhat.BaseMITerm,PosteriorProb.BaseMITerm,~]=predict(classifier.BaseMITerm,ValidationFold.BaseMITerm.data(:,ind.BaseMITerm(1:Nsel)));
+%        ClassError.BaseMITerm(i,Nsel)=classerror(ValidationFold.BaseMITerm.labels,yhat.BaseMITerm);
+%        Nsel
+%    end
+% end
+% 
+% MeanClassError.BaseMITerm=mean(ClassError.BaseMITerm);
+% 
+% %average outside CV
+% averageFisher.BaseMITerm=zeros(size(power_feat.BaseMITerm,2),1);
+% for i=1:size(power_feat.BaseMITerm,2)
+%     for j=1:10
+%         averageFisher.BaseMITerm(i)=averageFisher.BaseMITerm(i)+power_feat.BaseMITerm(j,ind.BaseMITerm(j,:)==i);
+%     end
+%     averageFisher.BaseMITerm(i)=averageFisher.BaseMITerm(i)/10;
+% end
+% 
+% %reshaping average Fisher's scores from line to matrix to plot them
+% averageFisher.BaseMITerm=reshape(averageFisher.BaseMITerm,[19 16])';
+% 
+% %plot of Fisher's scores.
+% figure
+% imagesc([4 40],[1 16],averageFisher.BaseMITerm)
+% title('Fisher scores - baseline vs MI termination');

@@ -93,7 +93,7 @@ end
 % epoch_baseline=epoch_window(runconc,200,0,2,params_spectrogram.mlength,params_spectrogram.wshift);
 % epoch_MI=epoch_window(runconc,400,0,3,params_spectrogram.mlength,params_spectrogram.wshift);
 % epoch_MI_term=epoch_window(runconc,555,0,3,params_spectrogram.mlength,params_spectrogram.wshift);
-epoch_baseline=epoch_window(runconc,200,3,params_spectrogram.mlength,params_spectrogram.wshift);
+epoch_baseline=epoch_window(runconc,200,2,params_spectrogram.mlength,params_spectrogram.wshift);
 epoch_MI=epoch_window(runconc,400,3,params_spectrogram.mlength,params_spectrogram.wshift);
 epoch_MI_term=epoch_window(runconc,555,3,params_spectrogram.mlength,params_spectrogram.wshift);
 
@@ -115,14 +115,20 @@ EpochTesting.BaseMI.labels=cat(1,epoch_baseline.labels((thresholdCross*size(epoc
 
 % ATTENZIONE: SE BASELINE E MI HANNO TEMPI DIVERSI; NON FUNZIONA
 
-NoTrainingSamplesPerClass=thresholdCross*size(epoch_baseline.samples,3);
-TrialsPerFold=NoTrainingSamplesPerClass/(epoch_baseline.duration*10);  %33=no. of windows per each trial, 10=folds cv;
+NoTrainingSamplesPerClassBas=thresholdCross*size(epoch_baseline.samples,3);
+NoTrainingSamplesPerClassMI=thresholdCross*size(epoch_MI.samples,3);
+
+TrialsPerFold=NoTrainingSamplesPerClassBas/(epoch_baseline.duration*10);  
 
 for i=1:10
-    contStart=(TrialsPerFold*(i-1)*33+1);
-    contEnd=TrialsPerFold*i*33;
-    Folds.BaseMI.data{i}=cat(3,EpochTraining.BaseMI.data(:,:,contStart:contEnd),EpochTraining.BaseMI.data(:,:,(contStart+NoTrainingSamplesPerClass):(contEnd+NoTrainingSamplesPerClass)));
-    Folds.BaseMI.labels{i}=cat(1,EpochTraining.BaseMI.labels(contStart:contEnd),EpochTraining.BaseMI.labels((contStart+NoTrainingSamplesPerClass):(contEnd+NoTrainingSamplesPerClass)));
+    contStartBas=(TrialsPerFold*(i-1)*epoch_baseline.duration+1); %33=no. of windows per each trial, 10=folds cv;
+    contEndBas=TrialsPerFold*i*epoch_baseline.duration;
+    
+    contStartMI=(TrialsPerFold*(i-1)*epoch_MI.duration+1); 
+    contEndMI=TrialsPerFold*i*epoch_MI.duration;
+    
+    Folds.BaseMI.data{i}=cat(3,EpochTraining.BaseMI.data(:,:,contStartBas:contEndBas),EpochTraining.BaseMI.data(:,:,(contStartMI+NoTrainingSamplesPerClassBas):(contEndMI+NoTrainingSamplesPerClassBas)));
+    Folds.BaseMI.labels{i}=cat(1,EpochTraining.BaseMI.labels(contStartBas:contEndBas),EpochTraining.BaseMI.labels((contStartMI+NoTrainingSamplesPerClassBas):(contEndMI+NoTrainingSamplesPerClassBas)));
 end
 
 %% Now we need to transform every sample from a matrix to a line (because
@@ -158,8 +164,8 @@ for i=1:10
    
    for j=1:numel(Classifier)
        for Nsel=1:50 %304
-          classifier.BaseMI.noPCA=fitcdiscr(TrainingFolds.BaseMI.data(:,ind.BaseMI.noPCA(1:Nsel)),TrainingFolds.BaseMI.labels,'discrimtype',Classifier{1,j});
-          [yhat.BaseMI.noPCA,PosteriorProb.BaseMI.noPCA,~]=predict(classifier.BaseMI.noPCA,ValidationFold.BaseMI.data(:,ind.BaseMI.noPCA(1:Nsel)));
+          classifier.BaseMI.noPCA=fitcdiscr(TrainingFolds.BaseMI.data(:,ind.BaseMI.noPCA(i,1:Nsel)),TrainingFolds.BaseMI.labels,'discrimtype',Classifier{1,j});
+          [yhat.BaseMI.noPCA,PosteriorProb.BaseMI.noPCA,~]=predict(classifier.BaseMI.noPCA,ValidationFold.BaseMI.data(:,ind.BaseMI.noPCA(i,1:Nsel)));
           ClassError.BaseMI.noPCA{j}(i,Nsel)=classerror(ValidationFold.BaseMI.labels,yhat.BaseMI.noPCA);
        %Nsel
        end
