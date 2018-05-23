@@ -9,7 +9,7 @@ addpath(genpath('codeProject1'));%--?
 
 load('channel_location_16_10-20_mi');
 
-folderName =  'folder_runs_ak5_Giammarco';
+folderName =  'mi614';
 
 params_spectrogram.mlength    = 1;
 params_spectrogram.wlength    = 0.5;
@@ -48,9 +48,10 @@ for j=1:numel(s)
     for i=1:size(chanlocs16,2)
         
         data=s{j}.data(:,i);
-        data_filter{j}.data(:,i)=filter(b,a,data);
+%        data_filter{j}.data(:,i)=filter(b,a,data);
+    data_filter{j}.data(:,i)=data;
     end
-    clear data;
+    %clear data;
    
 end
 %% CAR FILTER
@@ -88,9 +89,13 @@ for i=1:numel(s)
 end
 
 %create epoching 
-epoch_baseline=epoch_window(runconc,200,0,3,params_spectrogram.mlength,params_spectrogram.wshift);
-epoch_MI=epoch_window(runconc,400,0,3,params_spectrogram.mlength,params_spectrogram.wshift);
-epoch_MI_term=epoch_window(runconc,555,0,3,params_spectrogram.mlength,params_spectrogram.wshift);
+% epoch_baseline=epoch_window(runconc,200,0,2,params_spectrogram.mlength,params_spectrogram.wshift);
+% epoch_MI=epoch_window(runconc,400,0,3,params_spectrogram.mlength,params_spectrogram.wshift);
+% epoch_MI_term=epoch_window(runconc,555,0,3,params_spectrogram.mlength,params_spectrogram.wshift);
+epoch_baseline=epoch_window(runconc,200,2,params_spectrogram.mlength,params_spectrogram.wshift);
+epoch_MI=epoch_window(runconc,400,3,params_spectrogram.mlength,params_spectrogram.wshift);
+epoch_MI_term=epoch_window(runconc,555,3,params_spectrogram.mlength,params_spectrogram.wshift);
+
  %% cross validation for each trial to avoid the problem of time-chronological event 
  
 thresholdCross=0.75; %25% of the data is test set for online test

@@ -35,7 +35,7 @@ function wPOS = proc_pos2win(POS, wshift, direction, mlength)
         error('chk:arg', 'Direction not recognized: only forward and backward are allowed');
     end
     
-    wPOS = floor(POS/wshift) + 1; %how many shifts there are before reaching that Event sample
+    wPOS = floor(POS/wshift) + 1; 
     
     if backward == true
         wPOS = wPOS - (floor(mlength/wshift)); %floor(wlength/wshift) is the number of windows that ovelaps with one windows
