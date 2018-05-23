@@ -93,7 +93,7 @@ end
 % epoch_baseline=epoch_window(runconc,200,0,2,params_spectrogram.mlength,params_spectrogram.wshift);
 % epoch_MI=epoch_window(runconc,400,0,3,params_spectrogram.mlength,params_spectrogram.wshift);
 % epoch_MI_term=epoch_window(runconc,555,0,3,params_spectrogram.mlength,params_spectrogram.wshift);
-epoch_baseline=epoch_window(runconc,200,3,params_spectrogram.mlength,params_spectrogram.wshift);
+epoch_baseline=epoch_window(runconc,200,2,params_spectrogram.mlength,params_spectrogram.wshift);
 epoch_MI=epoch_window(runconc,400,3,params_spectrogram.mlength,params_spectrogram.wshift);
 epoch_MI_term=epoch_window(runconc,555,3,params_spectrogram.mlength,params_spectrogram.wshift);
 
@@ -109,15 +109,11 @@ EpochTraining.BaseMI.data=cat(3, epoch_baseline.samples(:,:,1:thresholdCross*siz
 EpochTraining.BaseMI.labels=cat(1,epoch_baseline.labels(1:thresholdCross*size(epoch_baseline.labels,1)), epoch_MI.labels(1:thresholdCross*size(epoch_MI.labels,1)));
 
 EpochTesting.BaseMI.data=cat(3, epoch_baseline.samples(:,:,((thresholdCross*size(epoch_baseline.samples,3)+1):end)), epoch_MI.samples(:,:,(thresholdCross*size(epoch_MI.samples,3)+1):end));
-EpochTesting.BaseMI.labels=cat(1,epoch_baseline.labels((thresholdCross*size(epoch_baseline.labels,1)+1):end), epoch_MI.labels((thresholdCross*size(epoch_MI.labels,1)+1):end));
+EpochTesting.BaseMI.labels=cat(1, epoch_baseline.labels((thresholdCross*size(epoch_baseline.samples,1)+1):end), epoch_MI.labels((thresholdCross*size(epoch_MI.samples,1)+1):end));
 
 %% marco 
-
-% ATTENZIONE: SE BASELINE E MI HANNO TEMPI DIVERSI; NON FUNZIONA
-
 NoTrainingSamplesPerClass=thresholdCross*size(epoch_baseline.samples,3);
 TrialsPerFold=NoTrainingSamplesPerClass/(epoch_baseline.duration*10);  %33=no. of windows per each trial, 10=folds cv;
-
 for i=1:10
     contStart=(TrialsPerFold*(i-1)*33+1);
     contEnd=TrialsPerFold*i*33;
