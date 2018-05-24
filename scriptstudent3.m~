@@ -380,10 +380,10 @@ title('Fisher scores - baseline vs MI termination');
 thresholdCross=0.75;
 
 EpochTraining.MITerm.data=cat(3, epoch_MI.samples(:,:,1:floor(thresholdCross*size(epoch_MI.samples,3))), epoch_MI_term.samples(:,:,1:floor(thresholdCross*size(epoch_MI_term.samples,3))));
-EpochTraining.MITerm.labels=cat(1,400*ones(floor(thresholdCross*size(epoch_MI.labels,1)),1), epoch_MI_term.labels(1:floor(thresholdCross*size(epoch_MI_term.labels,1))));
+EpochTraining.MITerm.labels=cat(1,400*ones(floor(thresholdCross*size(epoch_MI.labels,1),1)), epoch_MI_term.labels(1:floor(thresholdCross*size(epoch_MI_term.labels,1))));
  
 EpochTesting.MITerm.data=cat(3, epoch_MI.samples(:,:,(floor(thresholdCross*size(epoch_MI.samples,3))+1):end), epoch_MI_term.samples(:,:,(floor(thresholdCross*size(epoch_MI_term.samples,3))+1):end));
-EpochTesting.MITerm.labels=cat(1, 400*ones(floor((1-thresholdCross)*size(epoch_MI.labels,1)),1), epoch_MI_term.labels((floor(thresholdCross*size(epoch_MI_term.labels,1))+1):end));
+EpochTesting.MITerm.labels=cat(1, 400*ones(floor((1-thresholdCross)*size(epoch_MI.labels,1),1)), epoch_MI_term.labels((thresholdCross*size(epoch_MI_term.labels,1)+1):end));
 
 NoTrainingSamplesPerClass=thresholdCross*size(epoch_MI.samples,3);
 TrialsPerFold=NoTrainingSamplesPerClass/(epoch_MI.duration*10);
