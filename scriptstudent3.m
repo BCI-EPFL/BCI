@@ -78,9 +78,9 @@ end
 % epoch_baseline=epoch_window(runconc,200,0,2,params_spectrogram.mlength,params_spectrogram.wshift);
 % epoch_MI=epoch_window(runconc,400,0,3,params_spectrogram.mlength,params_spectrogram.wshift);
 % epoch_MI_term=epoch_window(runconc,555,0,3,params_spectrogram.mlength,params_spectrogram.wshift);
-epoch_baseline=epoch_window(runconc,200,2,params_spectrogram.mlength,params_spectrogram.wshift);
-epoch_MI=epoch_window(runconc,400,3,params_spectrogram.mlength,params_spectrogram.wshift);
-epoch_MI_term=epoch_window(runconc,555,3,params_spectrogram.mlength,params_spectrogram.wshift);
+epoch_baseline=epoch_window(runconc,200,0,2,params_spectrogram.mlength,params_spectrogram.wshift);
+epoch_MI=epoch_window(runconc,555,-2,0,params_spectrogram.mlength,params_spectrogram.wshift);
+epoch_MI_term=epoch_window(runconc,555,0.5,2.5,params_spectrogram.mlength,params_spectrogram.wshift);
 
 %% cross validation for each trial to avoid the problem of time-chronological event 
  
@@ -398,13 +398,13 @@ k=0;
 cont=1;
 trials=0;
 for j=1:10
-for i=1:TrialsPerFold
-    Folds.Base.data=cat(3,Folds.Base.data,EpochTraining.BaseMITerm.data(:,:,(cont+trials+k:epoch_baseline.duration*i+trials)),EpochTraining.BaseMITerm.data(:,:,(cont+trials+k+NoTrainingSamplesPerClass:(epoch_baseline.duration*i+NoTrainingSamplesPerClass+trials))));
-    % -1 is to not consider twice the same number.
-    Folds.Base.labels=cat(1,Folds.Base.labels,EpochTraining.BaseMITerm.labels((cont+trials+k:epoch_baseline.duration*i+trials)),EpochTraining.BaseMITerm.labels((cont+trials+k+NoTrainingSamplesPerClass:(epoch_baseline.duration*i+NoTrainingSamplesPerClass+trials))));
-    k=1;
-    cont=i*epoch_baseline.duration;
-end
+    for i=1:TrialsPerFold
+        Folds.Base.data=cat(3,Folds.Base.data,EpochTraining.BaseMITerm.data(:,:,(cont+trials+k:epoch_baseline.duration*i+trials)),EpochTraining.BaseMITerm.data(:,:,(cont+trials+k+NoTrainingSamplesPerClass:(epoch_baseline.duration*i+NoTrainingSamplesPerClass+trials))));
+        % -1 is to not consider twice the same number.
+        Folds.Base.labels=cat(1,Folds.Base.labels,EpochTraining.BaseMITerm.labels((cont+trials+k:epoch_baseline.duration*i+trials)),EpochTraining.BaseMITerm.labels((cont+trials+k+NoTrainingSamplesPerClass:(epoch_baseline.duration*i+NoTrainingSamplesPerClass+trials))));
+        k=1;
+        cont=i*epoch_baseline.duration;
+    end
 
 trials=cont;
 cont=1;
