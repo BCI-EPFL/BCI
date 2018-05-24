@@ -364,5 +364,5 @@ h=colorbar;
 % 
 % %plot of Fisher's scores.
 % figure
-% imagesc([4 40],[1 16],averageFisher.BaseMITerm)
+% imagesc([4 40],[1 16],averageFisher.BaseMITerm);
 % title('Fisher scores - baseline vs MI termination');
