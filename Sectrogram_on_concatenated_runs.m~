@@ -12,7 +12,7 @@ TimeBeforeEventBaseline=-3;
 TimeAfterEventBaseline=3;
 %--MI
 TimeBeforeEventMI=-2;
-TimeAfterEventMI=4;
+TimeAfterEventMI=6;
 %--MI termination
 TimeBeforeEventMItermination=-3;
 TimeAfterEventMItermination=3;
@@ -156,7 +156,7 @@ filt_epoch_MI_lap_termination=epoch_struct(session_filt_lap,555,TimeBeforeEventM
 
 for i=1:16
    
-   
+    %channels={'FZ','FC3','FC1','FCz','FC2','FC4','C3','C1', 'Cz', 'C2', 'C4' ,'CP3' ,'CP1' ,'CPZ', 'CP2' ,'CP4'}; 
  
    [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_CAR, filt_epoch_MI_CAR, i, filt_epoch_baseline_CAR.fs, filt_epoch_baseline_CAR.fs-32, Cyclic_freq);
    
@@ -196,6 +196,7 @@ figure;
 
 for i=1:16
    
+    
     if i==7
     Matrix.(chanlocs16(i).labels)=Matrix.(chanlocs16(i).labels)./size(Files,2);
    subplot(2,3,1);
@@ -207,7 +208,7 @@ for i=1:16
    colormap('jet');
    xlabel('time[s]');
    ylabel('frequency[Hz]');
-   title((sprintf('Channel %s',filt_epoch_baseline_CAR.channels{1,i})));
+   title((sprintf('Channel %s',filt_epoch_baseline_CAR.chanlocs16(i).labels{1,i})));
   
    end
     if i==11
@@ -230,7 +231,7 @@ for i=1:16
     Matrix.(chanlocs16(i).labels)=Matrix.(chanlocs16(i).labels)./size(Files,2);
    subplot(2,3,4);
    time=t(1,:)+ filt_epoch_MI_CAR.time;
-   imagesc('XData',time,'YData',f,'CData', 10*log(Matrix.(chanlocs16(i).labels)));
+   imagesc('XData',time,'YData',f,'CData', 10*log(Matrix.(channels{i})));
    axis tight;
    colorbar;
    caxis([-5 5]);
@@ -242,10 +243,10 @@ for i=1:16
     end
    
     if i==16
-    Matrix.(chanlocs16(i).labels)=Matrix.(chanlocs16(i).labels)./size(Files,2);
+    Matrix.(channels(i,:))=Matrix.(channels(i,:))./size(Files,2);
    subplot(2,3,6);
    time=t(1,:)+ filt_epoch_MI_CAR.time;
-   imagesc('XData',time,'YData',f,'CData', 10*log(Matrix.(chanlocs16(i).labels)));
+   imagesc('XData',time,'YData',f,'CData', 10*log(Matrix.(channels(i,:))));
    axis tight;
    colorbar;
    caxis([-5 5]);
@@ -257,10 +258,10 @@ for i=1:16
    end
     
    if i==9 
-   Matrix.(chanlocs16(i).labels)=Matrix.(chanlocs16(i).labels)./size(Files,2);
+   Matrix.(channels(i,:))=Matrix.(channels(i,:))./size(Files,2);
    subplot(2,3,2);
    time=t(1,:)+ filt_epoch_MI_CAR.time;
-   imagesc('XData',time,'YData',f,'CData', 10*log(Matrix.(chanlocs16(i).labels)));
+   imagesc('XData',time,'YData',f,'CData', 10*log(Matrix.(channels(i,:))));
    axis tight;
    colorbar;
    caxis([-5 5]);
@@ -372,7 +373,7 @@ end
 
 
 
-%%
+
 
 
 

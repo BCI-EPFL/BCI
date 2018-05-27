@@ -10,7 +10,7 @@ addpath(genpath('codeProject1'));%--?
 
 load('channel_location_16_10-20_mi');
 
-folderName =  'mi614';
+folderName =  'folder_runs_ak6';
 
 params_spectrogram.mlength    = 1;
 params_spectrogram.wlength    = 0.5;
