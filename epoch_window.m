@@ -44,7 +44,7 @@ if (timeaEvent ~=0 )
     struct_window.labels=ones(size(session.event.name(session.event.name==Align_Event),1)*struct_window.duration,1)*Align_Event;
     
  
-    else  
+  else  
      samplesBeforeAlignEvents=abs(timebEvent+windowlength)/overlap; 
      samplesAfterAlignEvents=abs((timeaEvent))/overlap;
      struct_window.labels=session.event.name(session.event.name==Align_Event);
