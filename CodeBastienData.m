@@ -1,7 +1,7 @@
 % no division on train and test
 % took all the data and to the 
 addpath(genpath('DataBastien'));
-load('ak4/training4.mat');
+load('ak6/training6.mat');
 % load('ak6/training5');
 % load('ak6/training4');
 
