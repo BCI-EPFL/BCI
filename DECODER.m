@@ -10,7 +10,7 @@ addpath(genpath('codeProject1'));
 
 load('channel_location_16_10-20_mi');
 
-folderName =  'folder_runs_ak5_Giammarco';
+folderName =  'folder_runs_ak6';
 
 params_spectrogram.mlength    = 1;
 params_spectrogram.wlength    = 0.5;
@@ -173,8 +173,8 @@ for j=1:numel(Classifier)
     MeanClassError.MITerm.noPCA{j}=mean(ClassError.MITerm{j});
     plot(1:20,MeanClassError.MITerm.noPCA{j});
    
-    title('Classifier and class error ');
-    legend('Classifier: Linear','Classifier: DiagLinear','diagquadratic');
+    title(' Class error for different Classifiers ');
+    legend('Classifier: Linear','Classifier: DiagLinear','Classifier=Diagquadratic');
     xlabel('features');
     ylabel('class error');
     hold on 
@@ -268,14 +268,35 @@ set(gca,'yTick',1:16,'YTickLabel', {chanlocs16.labels});
 h=colorbar;
 
 
-%% ROC CURVE
+
+%% ROC CURVE and class error on the test
 
 
 Nsel=20;
 
+for Nsel=1:20
 classifier.MITermNorm=fitcdiscr(EpochTraining.MITerm.dataNorm(:,ind.MITermNorm(1,1:Nsel)),EpochTraining.MITerm.labelsCorrected,'discrimtype', 'linear');
 [yhat.MITermNorm,PosteriorProb.MITermNorm,~]=predict(classifier.MITermNorm,EpochTesting.MITerm.dataNorm(:,ind.MITermNorm(1,1:Nsel)));
+ClassError.MITermNorm(1,Nsel)=classerror(EpochTest.MITerm.labelsCorrected,yhat.MITermNorm);
+
+end
+
+plot(1:20,ClassError.MITermNorm);
+title(' Class error for different Classifiers ');
+legend('Classifier: Linear');
+xlabel('features');
+ylabel('class error');
+      
 
 [X,Y] = perfcurve(EpochTest.MITerm.labelsCorrected,PosteriorProb.MITermNorm(:,2),555);
 plot(X,Y);
+xlabel('False positive rate') 
+ylabel('True positive rate')
+title('ROC curve ')
 % random curve is the bisettrice, 
+
+%plot confusion
+
+C=confusionmat(EpochTest.MITerm.labelsCorrected,yhat.MITermNorm);
+xlabel('True label');
+ylabel('Predicted label');
