@@ -10,7 +10,7 @@ addpath(genpath('codeProject1'));
 
 load('channel_location_16_10-20_mi');
 
-folderName =  'folder_runs_ak6';
+folderName =  'mi614';
 
 params_spectrogram.mlength    = 1;
 params_spectrogram.wlength    = 0.5;
@@ -153,7 +153,7 @@ for i=1:10
     Classifier={'linear', 'diaglinear','diagquadratic'}; %
    %loop over the number of features
    for j=1:numel(Classifier)
-    for Nsel=1:20%304
+    for Nsel=1:304
        classifier.MITerm=fitcdiscr(TrainingFolds.MITerm.data(:,ind.MITerm(i,1:Nsel)),TrainingFolds.MITerm.labels,'discrimtype', Classifier{1,j});
        [yhat.MITerm,PosteriorProb.MITerm{i},~]=predict(classifier.MITerm,ValidationFold.MITerm.data(:,ind.MITerm(i,1:Nsel)));
        ClassError.MITerm{j}(i,Nsel)=classerror(ValidationFold.MITerm.labels,yhat.MITerm);
@@ -171,7 +171,7 @@ end
 %error--> selection Classifier and number of features
 for j=1:numel(Classifier)
     MeanClassError.MITerm.noPCA{j}=mean(ClassError.MITerm{j});
-    plot(1:20,MeanClassError.MITerm.noPCA{j});
+    plot(1:304,MeanClassError.MITerm.noPCA{j});
    
     title(' Class error for different Classifiers ');
     legend('Classifier: Linear','Classifier: DiagLinear','Classifier=Diagquadratic');
@@ -243,6 +243,7 @@ for j=1:size(EpochTest.MITerm.dataCorrected,3)%--> to do better in order like tr
 end 
 
 
+%% 
 [EpochTraining.MITerm.dataNorm, mu.MINorm, sigma.MINorm]=zscore(EpochTraining.MITerm.dataNorm);% Mu is the mean and Sigma is the standard devition
 EpochTesting.MITerm.dataNorm=(EpochTesting.MITerm.dataNorm-mu.MINorm)./sigma.MINorm;
    
@@ -273,19 +274,12 @@ h=colorbar;
 
 
 Nsel=20;
-
-for Nsel=1:20
 classifier.MITermNorm=fitcdiscr(EpochTraining.MITerm.dataNorm(:,ind.MITermNorm(1,1:Nsel)),EpochTraining.MITerm.labelsCorrected,'discrimtype', 'linear');
 [yhat.MITermNorm,PosteriorProb.MITermNorm,~]=predict(classifier.MITermNorm,EpochTesting.MITerm.dataNorm(:,ind.MITermNorm(1,1:Nsel)));
-ClassError.MITermNorm(1,Nsel)=classerror(EpochTest.MITerm.labelsCorrected,yhat.MITermNorm);
+ClassError.MITermNorm=classerror(EpochTest.MITerm.labelsCorrected,yhat.MITermNorm);
 
-end
 
-plot(1:20,ClassError.MITermNorm);
-title(' Class error for different Classifiers ');
-legend('Classifier: Linear');
-xlabel('features');
-ylabel('class error');
+
       
 
 [X,Y] = perfcurve(EpochTest.MITerm.labelsCorrected,PosteriorProb.MITermNorm(:,2),555);
