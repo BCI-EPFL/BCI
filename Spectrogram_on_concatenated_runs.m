@@ -20,7 +20,6 @@ TimeAfterEventMItermination=3;
 %--Cyclic frequency for spectrogram
 Cyclic_freq=[5:0.1:40]; %inital:resolution:final
 
-
 %% Loading paths and files
 
 addpath(genpath('biosig'));
@@ -371,7 +370,7 @@ figure
 for j=1:9
     subplot(3,3,j)
     % positions of time from -2 to 6 sec: t(25,29,33,37,41,45,49,53,57)
-    topoplot(spect_for_one_channel_top(:,5+j*4),chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
+    topoplot(spect_for_one_channel_top(:,5+j*4),chanlocs16,'style','both','chaninfo', session.channels);
     title(sprintf('time : %.2f ',t(5+j*4)-2));
 end
 suptitle(sprintf('Topoplot Laplacian %s - alpha band - onset', name));
@@ -395,7 +394,7 @@ figure
 for j=1:9
     subplot(3,3,j)
     % positions of time from -2 to 6 sec: t(25,29,33,37,41,45,49,53,57)
-    topoplot(spect_for_one_channel_top(:,5+j*4),chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
+    topoplot(spect_for_one_channel_top(:,5+j*4),chanlocs16,'style','both','chaninfo', session.channels);
     title(sprintf('time : %.2f ',t(5+j*4)-2));
 end
 
@@ -418,7 +417,7 @@ end
 figure
 for j=1:9
     subplot(3,3,j)
-    topoplot(spect_for_one_channel_top(:,21+j*4),chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
+    topoplot(spect_for_one_channel_top(:,21+j*4),chanlocs16,'style','both','chaninfo', session.channels);
     title(sprintf('time : %.2f ',t(21+j*4)-3));
 end
 
@@ -441,7 +440,7 @@ end
 figure
 for j=1:9
     subplot(3,3,j)
-    topoplot(spect_for_one_channel_top(:,21+j*4),chanlocs16,'style','both','electrodes','ptslabels','chaninfo', session.channels);
+    topoplot(spect_for_one_channel_top(:,21+j*4),chanlocs16,'style','both','chaninfo', session.channels);
     title(sprintf('time : %.2f ',t(21+j*4)-3));
 end
 
