@@ -438,6 +438,7 @@ for i=1:10
    
    %Fisher's score: we need to save it for every feature for every
    %iteration (we will make the average outside the CV loop)
+   
    [ind.MITerm(i,:), power_feat.MITerm(i,:)] = rankfeat(TrainingFolds.MITerm.data, TrainingFolds.MITerm.labels,  'fisher');
 
     Classifier={'linear', 'diaglinear','diagquadratic'}; %
@@ -465,6 +466,7 @@ for j=1:numel(Classifier)
 end
 
 %% average outside CV
+
 averageFisher.MITerm=zeros(size(power_feat.MITerm,2),1);
 for i=1:size(power_feat.MITerm,2)
     for j=1:10
@@ -487,8 +489,6 @@ h=colorbar;
 
 %% TERMINATION
 
- 
- 
 thresholdCross=0.75; %25% of the data is test set for online test
 
 %-----
@@ -503,6 +503,7 @@ EpochTesting.BaseMITerm.labels=cat(1, epoch_baseline.labels((thresholdCross*size
 
 
 %% QUESTA è LA SEZIONE A CUI MI RIFERIVO:
+
 %%put each 33 sample for baseline and MI events in a way to be the following--> .
 
 NoTrainingSamplesPerClass=thresholdCross*size(epoch_baseline.samples,3);
@@ -611,8 +612,6 @@ for i=1:size(power_feat.BaseMi,2) % each features that we wanna find
     end
     averageFisher.BaseMi(i)=averageFisher.BaseMi(i)/10;
 end
-
-
 
 %reshaping average Fisher's scores from line to matrix to plot them
 averageFisher.BaseMi=reshape(averageFisher.BaseMi,[19 16])'; % reshape in a way to have 16 channels for rows and 19 channles for columns
