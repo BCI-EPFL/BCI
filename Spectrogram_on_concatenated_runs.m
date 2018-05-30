@@ -73,8 +73,7 @@ for j=1:FilesLength
     medium_channels=mean(s');
     signal_car=zeros(size(s,1),size(s,2));
     for i=1:size(s,1)
-        signal_car(i,:)=s(i,:)-medium_channels(1,i);
-        
+        signal_car(i,:)=s(i,:)-medium_channels(1,i); 
     end
     
     session_filt_CAR=session;
@@ -97,10 +96,10 @@ for j=1:FilesLength
     filt_epoch_baseline_CAR=epoch_struct(session_filt_CAR,200,TimeBeforeEventBaseline,TimeAfterEventBaseline);
     filt_epoch_MI_CAR=epoch_struct(session_filt_CAR,400,TimeBeforeEventMI,TimeAfterEventMI);
     filt_epoch_MI_CAR_termination=epoch_struct(session_filt_CAR,555,TimeBeforeEventMItermination,TimeAfterEventMItermination);
- 
+    
     for i=1:size(chanlocs16,2)
         [pwelch_car_bas_onechannel{i},freq_1]=pwelch_for_each_channel(i,filt_epoch_baseline_CAR,500,session_filt_CAR.fs);
-        [pwelch_car_MI_onechannel{i},freq_2]=pwelch_for_each_channel(i,filt_epoch_MI_CAR_termination,500,session_filt_CAR.fs);
+        [pwelch_car_MI_onechannel{i},freq_2]=pwelch_for_each_channel(i,filt_epoch_MI_CAR,500,session_filt_CAR.fs);
         
         if j==1
             
@@ -155,8 +154,7 @@ for j=1:FilesLength
     
     %% Spectrogram (change the inputs in the Spectrogram_function call)
     
-    for i=1:16
-        
+    for i=1:16    
         [spect_for_one_channel,t, f]=Spectrogram_function(filt_epoch_baseline_CAR, filt_epoch_MI_CAR, i, filt_epoch_baseline_CAR.fs, filt_epoch_baseline_CAR.fs-32, Cyclic_freq);
         
         if j==1
