@@ -185,6 +185,7 @@ for iFold=1:nFold
 end
 
 %error
+figure
 for iClassifier=1:numel(Classifier)
     class_error4Classifier = squeeze(class_error(:,iClassifier,:));
     
@@ -218,7 +219,7 @@ XRocC{4}=XRoc;
 YRocC{4}=YRoc;
 
 %it's not possible to perform the diaglinear or diagquadratic.
-
+figure
 plot(mean(XRocC{1},2),mean(YRocC{1},2));
 
 hold on
