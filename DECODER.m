@@ -10,7 +10,7 @@ addpath(genpath('codeProject1'));
 
 load('channel_location_16_10-20_mi');
 
-folderName =  'mi614';
+folderName =  'folder_runs_ak6';
 
 params_spectrogram.mlength    = 1;
 params_spectrogram.wlength    = 0.5;
@@ -153,7 +153,7 @@ for i=1:10
     Classifier={'linear', 'diaglinear','diagquadratic'}; %
    %loop over the number of features
    for j=1:numel(Classifier)
-    for Nsel=1:304
+    for Nsel=1:20
        classifier.MITerm=fitcdiscr(TrainingFolds.MITerm.data(:,ind.MITerm(i,1:Nsel)),TrainingFolds.MITerm.labels,'discrimtype', Classifier{1,j});
        [yhat.MITerm,PosteriorProb.MITerm{i},~]=predict(classifier.MITerm,ValidationFold.MITerm.data(:,ind.MITerm(i,1:Nsel)));
        ClassError.MITerm{j}(i,Nsel)=classerror(ValidationFold.MITerm.labels,yhat.MITerm);
@@ -171,7 +171,7 @@ end
 %error--> selection Classifier and number of features
 for j=1:numel(Classifier)
     MeanClassError.MITerm.noPCA{j}=mean(ClassError.MITerm{j});
-    plot(1:304,MeanClassError.MITerm.noPCA{j});
+    plot(1:20,MeanClassError.MITerm.noPCA{j});
    
     title(' Class error for different Classifiers ');
     legend('Classifier: Linear','Classifier: DiagLinear','Classifier=Diagquadratic');
@@ -273,7 +273,7 @@ h=colorbar;
 %% ROC CURVE and class error on the test
 
 
-Nsel=20;
+Nsel=12;
 classifier.MITermNorm=fitcdiscr(EpochTraining.MITerm.dataNorm(:,ind.MITermNorm(1,1:Nsel)),EpochTraining.MITerm.labelsCorrected,'discrimtype', 'linear');
 [yhat.MITermNorm,PosteriorProb.MITermNorm,~]=predict(classifier.MITermNorm,EpochTesting.MITerm.dataNorm(:,ind.MITermNorm(1,1:Nsel)));
 ClassError.MITermNorm=classerror(EpochTest.MITerm.labelsCorrected,yhat.MITermNorm);
