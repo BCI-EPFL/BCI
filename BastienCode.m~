@@ -103,19 +103,27 @@ TrialsPerFold=NoTrainingSamplesPerClass/(epoch_MI.duration*10);
 % folds separation
 Folds.MI.data=[];
 Folds.MI.labels=[];
+k=0;
 cont=1;
+trials=0;
 for j=1:10
     for i=1:TrialsPerFold
-        Folds.MI.data=cat(3,Folds.MI.data,EpochTraining.MITerm.data(:,:,(cont:(cont+(epoch_MI.duration-1)))),EpochTraining.MITerm.data(:,:,((cont+NoTrainingSamplesPerClass):(cont+(epoch_MI.duration-1)+NoTrainingSamplesPerClass))));
+        Folds.MI.data=cat(3,Folds.MI.data,EpochTraining.MI.data(:,:,((cont+trials+k):((epoch_MI.duration-1)*i+trials))),EpochTraining.MITerm.data(:,:,((cont+trials+k+NoTrainingSamplesPerClass):(epoch_MI.duration*i+NoTrainingSamplesPerClass+trials))));
         % -1 is to not consider twice the same number.
-        Folds.MI.labels=cat(1,Folds.MI.labels,EpochTraining.MITerm.labels(cont:(cont+(epoch_MI.duration-1))),EpochTraining.MITerm.labels((cont+NoTrainingSamplesPerClass):(cont+(epoch_MI.duration-1)+NoTrainingSamplesPerClass)));
-        cont=cont+epoch_MI.duration;
+        Folds.MI.labels=cat(1,Folds.MI.labels,EpochTraining.MI.labels(((cont+trials+k):(epoch_MI.duration*i+trials))),EpochTraining.MITerm.labels(((cont+trials+k+NoTrainingSamplesPerClass):(epoch_MI.duration*i+NoTrainingSamplesPerClass+trials))));
+        k=1;
+        cont=i*epoch_MI.duration;
     end
+
+trials=cont;
+cont=1;
+k=0;
 Folds.MITerm.data{j}= Folds.MI.data;
 Folds.MITerm.labels{j}=Folds.MI.labels;
 Folds.MI.data=[];
 Folds.MI.labels=[];
 end
+ 
 
 %% Now we need to transform every sample from a matrix to a line 
 a=Folds; 
@@ -189,7 +197,6 @@ for iClassifier=1:numel(Classifier)
     class_error4Classifier = squeeze(class_error(:,iClassifier,:));
     
     meanClassError = mean(class_error4Classifier,1);
-    stdError(iClassifier,:)=std(meanClassError); %for each classifier
     plot(featuresList,meanClassError);
     hold on
 end
@@ -208,28 +215,22 @@ YRoc=[];
  YRoc=cat(2,YRoc,YforRoc{1,i});   
     end
 XRocC{1}=XRoc;
-YRocC{1}=YRoc; XRoc=[];YRoc=[];
+    YRocC{1}=YRoc;
+    XRoc=[];
+    YRoc=[];
 
-   for i=1:(iFold)
- XRoc=cat(2,XRoc,XforRoc{4,i});
- YRoc=cat(2,YRoc,YforRoc{4,i});   
-    end
-XRocC{4}=XRoc;
-YRocC{4}=YRoc;
 
-%it's not possible to perform the diaglinear or diagquadratic.
-
-plot(mean(XRocC{1},2),mean(YRocC{1},2));
-
+for i=1:numel(Classifier)
+plot(mean(XRocC{i},2),mean(YRocC{i},2));
+%standarddeviation
 hold on
-plot(mean(XRocC{4},2),mean(YRocC{4},2));
 xlabel('False positive rate') 
 ylabel('True positive rate')
 title('ROC curve ')
-legend('Classifier: Linear','Classifier:Quadratic');
+legend('Classifier: Linear','Classifier: DiagLinear','Classifier:Diagquadratic','Classifier:Quadratic');
 
 
-
+end
 
 %% average outside CV
 
@@ -250,4 +251,4 @@ h=colorbar;
 
 %% train on all the data set with the parameters selection
 Nsel=6;
-% linear is better because the std is smaller
+Classifier='Quadratic';
