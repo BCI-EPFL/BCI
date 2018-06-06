@@ -10,7 +10,7 @@ addpath(genpath('eeglab13_4_4b'));
 
 load('channel_location_16_10-20_mi');
 
-folderName =  'folder_runs_ak6';
+folderName =  'mi614';
 
 params_spectrogram.mlength    = 1;
 params_spectrogram.wlength    = 0.5;
@@ -126,8 +126,8 @@ epoch_MI_term=epoch_window(runconc,555,0.5,2.5,params_spectrogram.mlength,params
 
 %% MI initiation vs MI Termination
 
-thresholdCross=0.75;
-
+%thresholdCross=0.75;
+thresholdCross=2/3;
 EpochTraining.MITerm.data=cat(3, epoch_MI.samples(:,:,1:floor(thresholdCross*size(epoch_MI.samples,3))), epoch_MI_term.samples(:,:,1:floor(thresholdCross*size(epoch_MI_term.samples,3))));
 EpochTraining.MITerm.labels=cat(1,400*ones(floor(thresholdCross*size(epoch_MI.labels,1)),1), epoch_MI_term.labels(1:floor(thresholdCross*size(epoch_MI_term.labels,1))));
  
@@ -295,7 +295,7 @@ ylabel('Channels')
 title('Fisher scores map')
 h=colorbar;
 
-%% Training on the whole training 75% data set with the parameters selection
+%% Training on the whole training 75% (66%) data set with the parameters selection
 
 for j=1:size(EpochTraining.MITerm.data,3)
     dataTraining(j,:)=reshape(EpochTraining.MITerm.data(:,:,j)',[1,16*19]); 
@@ -307,7 +307,7 @@ classifier=fitcdiscr(dataTraining(:,indexTraining(1:hyperparameters.Nsel)),Epoch
 
 %% Capability evaluation
 
-%reshaping the 25% Test set
+%reshaping the 25%(33%) Test set
 for j=1:size(EpochTesting.MITerm.data,3)
     dataTesting(j,:)=reshape(EpochTesting.MITerm.data(:,:,j)',[1,16*19]); 
 end  
@@ -332,4 +332,4 @@ title('ROC curve')
 Metrics.ConfMat=confusionmat(EpochTesting.MITerm.labels,yhatTesting);
 
 %% ONLINE
-[Trials,SmoothedTotal]=real_online(s{1,length(s)},Mu,Sigma,classifier,indexTraining(1:hyperparameters.Nsel));
+[Trials,SmoothedTotal]=real_online(s{1,length(s)},Mu,Sigma,classifier,indexTraining(1:hyperparameters.Nsel),0.96);

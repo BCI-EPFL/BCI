@@ -10,7 +10,7 @@ addpath(genpath('eeglab13_4_4b'));
 
 load('channel_location_16_10-20_mi');
 
-folderName =  'folder_runs_ak6';
+folderName =  'mi614';
 
 params_spectrogram.mlength    = 1;
 params_spectrogram.wlength    = 0.5;
@@ -126,8 +126,8 @@ epoch_MI_term=epoch_window(runconc,555,0.5,2.5,params_spectrogram.mlength,params
 
 %% MI initiation vs MI Termination
 
-thresholdCross=0.75;
-
+%thresholdCross=0.75;
+thresholdCross=2/3;
 EpochTraining.MITerm.data=cat(3, epoch_MI.samples(:,:,1:floor(thresholdCross*size(epoch_MI.samples,3))), epoch_MI_term.samples(:,:,1:floor(thresholdCross*size(epoch_MI_term.samples,3))));
 EpochTraining.MITerm.labels=cat(1,400*ones(floor(thresholdCross*size(epoch_MI.labels,1)),1), epoch_MI_term.labels(1:floor(thresholdCross*size(epoch_MI_term.labels,1))));
  
