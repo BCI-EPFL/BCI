@@ -295,13 +295,17 @@ ylabel('Channels')
 title('Fisher discriminant power of features')
 h=colorbar;
 
-%% train on all the data set with the parameters selection
+%% Training on the whole training 75% data set with the parameters selection
 
 for j=1:size(EpochTraining.MITerm.data,3)
     dataTraining(j,:)=reshape(EpochTraining.MITerm.data(:,:,j)',[1,16*19]); 
 end    
 [dataTraining, Mu, Sigma]=zscore(dataTraining);
-classifier =fitcdiscr(dataTraining(:,indexPower(1:hyperparameters.Nsel)),EpochTraining.MITerm.labels,'discrimtype',  hyperparameters.ClassifierType);
+[indexTraining, powerTraining] = rankfeat(dataTraining, EpochTraining.MITerm.labels,  'fisher');
 
-%Online plot
-[Trials,SmoothedTotal]=real_online(s{1,length(s)},Mu,Sigma,classifier,indexPower(1:hyperparameters.Nsel));
+classifier =fitcdiscr(dataTraining(:,indexTraining(1:hyperparameters.Nsel)),EpochTraining.MITerm.labels,'discrimtype',  hyperparameters.ClassifierType);
+
+
+
+%% ONLINE
+[Trials,SmoothedTotal]=real_online(s{1,length(s)},Mu,Sigma,classifier,indexTraining(1:hyperparameters.Nsel));
