@@ -167,7 +167,7 @@ end
 
 % hyperparameters
 Classifier={'linear', 'diaglinear','diagquadratic','quadratic'};
-featuresList = 1:20;
+featuresList = 1:25;
 nFold = 10;
 
 Pfeature = [];
@@ -303,9 +303,33 @@ end
 [dataTraining, Mu, Sigma]=zscore(dataTraining);
 [indexTraining, powerTraining] = rankfeat(dataTraining, EpochTraining.MITerm.labels,  'fisher');
 
-classifier =fitcdiscr(dataTraining(:,indexTraining(1:hyperparameters.Nsel)),EpochTraining.MITerm.labels,'discrimtype',  hyperparameters.ClassifierType);
+classifier=fitcdiscr(dataTraining(:,indexTraining(1:hyperparameters.Nsel)),EpochTraining.MITerm.labels,'discrimtype',  hyperparameters.ClassifierType);
 
+%% Capability evaluation
 
+%reshaping the 25% Test set
+for j=1:size(EpochTesting.MITerm.data,3)
+    dataTesting(j,:)=reshape(EpochTesting.MITerm.data(:,:,j)',[1,16*19]); 
+end  
+
+%normalization
+dataTesting=(dataTesting-ones(size(dataTesting,1),1)*Mu)./(ones(size(dataTesting,1),1)*Sigma);
+
+%predict
+[yhatTesting,PosteriorProbTesting,~]=predict(classifier,dataTesting(:,indexTraining(1:hyperparameters.Nsel)));
+
+%class error
+Metrics.ClassError=classerror(EpochTesting.MITerm.labels,yhatTesting);
+    
+%ROC curve
+[X,Y,T,Metrics.AUC] = perfcurve(EpochTesting.MITerm.labels,PosteriorProbTesting(:,2),555);
+plot(X,Y);
+xlabel('False positive rate') 
+ylabel('True positive rate')
+title('ROC curve')
+
+%confusion matrix
+Metrics.ConfMat=confusionmat(EpochTesting.MITerm.labels,yhatTesting);
 
 %% ONLINE
 [Trials,SmoothedTotal]=real_online(s{1,length(s)},Mu,Sigma,classifier,indexTraining(1:hyperparameters.Nsel));

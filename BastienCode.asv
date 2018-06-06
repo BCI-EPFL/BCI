@@ -167,7 +167,7 @@ end
 
 % hyperparameters
 Classifier={'linear', 'diaglinear','diagquadratic','quadratic'};
-featuresList = 1:20;
+featuresList = 1:25;
 nFold = 10;
 
 Pfeature = [];
@@ -295,15 +295,41 @@ ylabel('Channels')
 title('Fisher discriminant power of features')
 h=colorbar;
 
-%% Training on the whole the data set with the parameters selection
+%% Training on the whole training 75% data set with the parameters selection
 
 for j=1:size(EpochTraining.MITerm.data,3)
     dataTraining(j,:)=reshape(EpochTraining.MITerm.data(:,:,j)',[1,16*19]); 
 end    
 [dataTraining, Mu, Sigma]=zscore(dataTraining);
-classifier =fitcdiscr(dataTraining(:,indexPower(1:hyperparameters.Nsel)),EpochTraining.MITerm.labels,'discrimtype',  hyperparameters.ClassifierType);
+[indexTraining, powerTraining] = rankfeat(dataTraining, EpochTraining.MITerm.labels,  'fisher');
 
+classifier =fitcdiscr(dataTraining(:,indexTraining(1:hyperparameters.Nsel)),EpochTraining.MITerm.labels,'discrimtype',  hyperparameters.ClassifierType);
 
+%% Capability evaluation
+
+%reshaping the 25% Test set
+for j=1:size(EpochTesting.MITerm.data,3)
+    dataTesting(j,:)=reshape(EpochTesting.MITerm.data(:,:,j)',[1,16*19]); 
+end  
+
+%normalization
+dataTesting=(dataTesting-ones(size(dataTesting,1),1)*Mu)./(ones(size(dataTesting,1),1)*Sigma);
+
+%predict
+[yhat.MITermNorm,PosteriorProb.MITermNorm,~]=predict(classifier.MITermNorm,EpochTesting.MITerm.dataNorm(:,ind.MITermNorm(1,1:Nsel)));
+
+%class error
+Metrics.ClassError=classerror(EpochTesting.MITerm.labels,yhat.MITermNorm);
+    
+%ROC curve
+[X,Y,T,Metrics.AUC] = perfcurve(EpochTesting.MITerm.labels,PosteriorProb.MITermNorm(:,2),555);
+plot(X,Y);
+xlabel('False positive rate') 
+ylabel('True positive rate')
+title('ROC curve')
+
+%confusion matrix
+Metrics.ConfMat=confusionmat(EpochTesting.MITerm.labels,yhat.MITermNorm);
 
 %% ONLINE
-[Trials,SmoothedTotal]=real_online(s{1,length(s)},Mu,Sigma,classifier,indexPower(1:hyperparameters.Nsel));
+[Trials,SmoothedTotal]=real_online(s{1,length(s)},Mu,Sigma,classifier,indexTraining(1:hyperparameters.Nsel));
