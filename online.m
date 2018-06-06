@@ -4,7 +4,7 @@
 timeFrame = 1; % one second buffer length
 nonoverlap = 0.0625; % 62.5ms frame shift
 
-
+samplingRate=512;
 psdWindow = 0.5*samplingRate;
 psdNOverlap = 0.25*samplingRate;
 f = [4:2:40];
@@ -13,11 +13,12 @@ alphaEvidenceAccumulation = 0.96; % smoothing parameter
 
 % extract the true stopping points
 stopId = 555;
-stopTimesInSR = sessions{1,4}.EVENT.POS(sessions{1,4}.EVENT.TYP == 555);
+%stopTimesInSR = sessions{1,4}.EVENT.POS(sessions{1,4}.EVENT.TYP == 555);
+stopTimesInSR = s{1,4}.event.position(s{1,4}.event.name == 555);
 
- 
-indexes = fisherInd(1:OptFeat);%look for the first f best features
-newFeatures = allFeatures(1:8730,indexes);%only the features selected
+OptFeat=10; 
+indexes = indexPower(1:OptFeat);%look for the first f best features
+newFeatures = TrainingData(:,indexes);%only the features selected
 classifier_online = fitcdiscr(newFeatures,TLabels(1:8730),'DiscrimType',type);
 
 testData = spatFilteredData{1,4}; % data for the pseudo online classification

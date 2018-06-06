@@ -130,7 +130,7 @@ end
 
 % hyperparameters
 Classifier={'linear', 'diaglinear','diagquadratic','quadratic'};
-featuresList = 1:20;
+featuresList = 1:150;
 nFold = 10;
 
 Pfeature = [];
