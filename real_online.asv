@@ -1,5 +1,5 @@
 %{
-Inputs: whole signal 4th run (s{1,4]=Session), mu, sigma, classifier, FeaturesIndeces
+Inputs: whole signal 4th run (s{1,4}=Session), mu, sigma, classifier, FeaturesIndeces
 
 
 %}
@@ -8,13 +8,14 @@ alpha=0.96;
 f=[4:2:40];
 
 %%Divide the run into the (30) trials
-TrialStart=Session.event.position(Session.event.name==400);
+TrialStart=Session.event.position(Session.event.name==400);%400=MI initiation
+TrialEnd=Session.event.position(Session.event.name==700);%700=Relax phase
 
 Trials=[];
-for i=1:(length(TrialStart)-1)
-    Trials{i}=Session.data(TrialStart(i):TrialStart(i+1),:)';
+for i=1:(length(TrialStart))
+    Trials{i}=Session.data(TrialStart(i):TrialEnd(i),:)';
 end
-Trials{i+1}=Session.data(TrialStart(i+1):end,:)';%the last trial does not end with a new 400
+
 
 
 %%Divide each trial into 1-second windows shifted by 0.0625s
@@ -26,7 +27,6 @@ j = 1;
     for t = 512:32:(size(Aux{i},2)-mod(size(Aux{i},2),32)) %we remove the last window (not of 1 second)
         for idxChannels = 1:16
             Trials{i}.Windows(idxChannels,:,j)=Aux{i}(idxChannels,t-512+1:t);
-            %bufferedData = testData(idxChannels,t-512+1:t);
         end 
         j= j+1;
     end
@@ -47,11 +47,15 @@ for i=1:length(Trials)
        
        %%pwelch (already reshaped)
        for idxChannels=1:16
-            [Trials{i}.Features(j,19*(idxChannels-1)+1:19*idxChannels),~] = pwelch(Trials{i}.Windows(idxChannels,:,j),0.5*512,0.4375*512,f,512);
+            [psd,freqgrid] = pwelch(Trials{i}.Windows(idxChannels,:,j),0.5*512,0.4375*512,[],512);
+            psd=log(psd);
+            [freqs, idfreqs] = intersect(freqgrid,f);
+            psd = psd(idfreqs);
+            Trials{i}.Features(j,(19*(idxChannels-1)+1):19*idxChannels)=psd;
        end
-       for idxChannels=1:16
-            Trials{i}.Features(j,19*(idxChannels-1)+1:19*idxChannels) = log(Trials{i}.Features(j,19*(idxChannels-1)+1:19*idxChannels));
-       end 
+%        for idxChannels=1:16
+%             Trials{i}.Features(j,19*(idxChannels-1)+1:19*idxChannels) = log(Trials{i}.Features(j,19*(idxChannels-1)+1:19*idxChannels));
+%        end 
        
        %%normalization
        Trials{i}.Features(j,:)=(Trials{i}.Features(j,:)-mu)./sigma;
@@ -77,6 +81,12 @@ end
 figure
 sz = 4;
 c = [0,0,1];
-scatter([1:length(SmoothedTotal)]/512,SmoothedTotal,sz,c,'filled')
-xlabel('Time [s]')
+scatter(1:(30/length(SmoothedTotal)):(31-30/length(SmoothedTotal)),SmoothedTotal,sz,c,'filled')
+hold on
+cont=1;
+for i=1:length(Trials)
+    vline(cont,'r','');
+    cont=cont+length(Evidence{1,i})*30/length(SmoothedTotal);
+end
+xlabel('Trials')
 ylabel('Smoothed probability')

@@ -27,7 +27,6 @@ j = 1;
     for t = 512:32:(size(Aux{i},2)-mod(size(Aux{i},2),32)) %we remove the last window (not of 1 second)
         for idxChannels = 1:16
             Trials{i}.Windows(idxChannels,:,j)=Aux{i}(idxChannels,t-512+1:t);
-            %bufferedData = testData(idxChannels,t-512+1:t);
         end 
         j= j+1;
     end
@@ -48,11 +47,15 @@ for i=1:length(Trials)
        
        %%pwelch (already reshaped)
        for idxChannels=1:16
-            [Trials{i}.Features(j,19*(idxChannels-1)+1:19*idxChannels),~] = pwelch(Trials{i}.Windows(idxChannels,:,j),0.5*512,0.4375*512,f,512);
+            [psd,freqgrid] = pwelch(Trials{i}.Windows(idxChannels,:,j),0.5*512,0.4375*512,[],512);
+            psd=log(psd);
+            [freqs, idfreqs] = intersect(freqgrid,f);
+            psd = psd(idfreqs);
+            Trials{i}.Features(j,(19*(idxChannels-1)+1):19*idxChannels)=psd;
        end
-       for idxChannels=1:16
-            Trials{i}.Features(j,19*(idxChannels-1)+1:19*idxChannels) = log(Trials{i}.Features(j,19*(idxChannels-1)+1:19*idxChannels));
-       end 
+%        for idxChannels=1:16
+%             Trials{i}.Features(j,19*(idxChannels-1)+1:19*idxChannels) = log(Trials{i}.Features(j,19*(idxChannels-1)+1:19*idxChannels));
+%        end 
        
        %%normalization
        Trials{i}.Features(j,:)=(Trials{i}.Features(j,:)-mu)./sigma;
