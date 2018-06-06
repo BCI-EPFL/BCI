@@ -10,7 +10,7 @@ addpath(genpath('eeglab13_4_4b'));
 
 load('channel_location_16_10-20_mi');
 
-folderName =  'folder_runs_ak5_Giammarco';
+folderName =  'folder_runs_ak6';
 
 params_spectrogram.mlength    = 1;
 params_spectrogram.wlength    = 0.5;
@@ -292,7 +292,7 @@ set(gca, 'YTick', 1:16,'YTickLabels', {chanlocs16.labels})
 xlabel('Frequencies (Hz)')
 axis tight;
 ylabel('Channels')
-title('Fisher discriminant power of features')
+title('Fisher scores map')
 h=colorbar;
 
 %% Training on the whole training 75% data set with the parameters selection
@@ -303,7 +303,7 @@ end
 [dataTraining, Mu, Sigma]=zscore(dataTraining);
 [indexTraining, powerTraining] = rankfeat(dataTraining, EpochTraining.MITerm.labels,  'fisher');
 
-classifier =fitcdiscr(dataTraining(:,indexTraining(1:hyperparameters.Nsel)),EpochTraining.MITerm.labels,'discrimtype',  hyperparameters.ClassifierType);
+classifier=fitcdiscr(dataTraining(:,indexTraining(1:hyperparameters.Nsel)),EpochTraining.MITerm.labels,'discrimtype',  hyperparameters.ClassifierType);
 
 %% Capability evaluation
 
@@ -316,20 +316,20 @@ end
 dataTesting=(dataTesting-ones(size(dataTesting,1),1)*Mu)./(ones(size(dataTesting,1),1)*Sigma);
 
 %predict
-[yhat.MITermNorm,PosteriorProb.MITermNorm,~]=predict(classifier.MITermNorm,EpochTesting.MITerm.dataNorm(:,ind.MITermNorm(1,1:Nsel)));
+[yhatTesting,PosteriorProbTesting,~]=predict(classifier,dataTesting(:,indexTraining(1:hyperparameters.Nsel)));
 
 %class error
-Metrics.ClassError=classerror(EpochTesting.MITerm.labels,yhat.MITermNorm);
+Metrics.ClassError=classerror(EpochTesting.MITerm.labels,yhatTesting);
     
 %ROC curve
-[X,Y,T,Metrics.AUC] = perfcurve(EpochTesting.MITerm.labels,PosteriorProb.MITermNorm(:,2),555);
+[X,Y,T,Metrics.AUC] = perfcurve(EpochTesting.MITerm.labels,PosteriorProbTesting(:,2),555);
 plot(X,Y);
 xlabel('False positive rate') 
 ylabel('True positive rate')
 title('ROC curve')
 
 %confusion matrix
-Metrics.ConfMat=confusionmat(EpochTesting.MITerm.labels,yhat.MITermNorm);
+Metrics.ConfMat=confusionmat(EpochTesting.MITerm.labels,yhatTesting);
 
 %% ONLINE
 [Trials,SmoothedTotal]=real_online(s{1,length(s)},Mu,Sigma,classifier,indexTraining(1:hyperparameters.Nsel));

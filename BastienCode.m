@@ -10,7 +10,7 @@ addpath(genpath('eeglab13_4_4b'));
 
 load('channel_location_16_10-20_mi');
 
-folderName =  'folder_runs_ak5_Giammarco';
+folderName =  'folder_runs_ak6';
 
 params_spectrogram.mlength    = 1;
 params_spectrogram.wlength    = 0.5;
@@ -292,7 +292,7 @@ set(gca, 'YTick', 1:16,'YTickLabels', {chanlocs16.labels})
 xlabel('Frequencies (Hz)')
 axis tight;
 ylabel('Channels')
-title('Fisher discriminant power of features')
+title('Fisher scores map')
 h=colorbar;
 
 %% Training on the whole training 75% data set with the parameters selection
