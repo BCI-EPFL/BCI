@@ -10,7 +10,7 @@ addpath(genpath('eeglab13_4_4b'));
 
 load('channel_location_16_10-20_mi');
 
-folderName =  'folder_runs_ak6';
+folderName =  'folder_runs_ak5_Giammarco';
 
 params_spectrogram.mlength    = 1;
 params_spectrogram.wlength    = 0.5;
@@ -61,7 +61,44 @@ for iRun = 1:nRun
 end
 
 %% Extract PSD
+
 sessionPSD = preprocess_spectrogram(signal_car,params_spectrogram);
+% Aux=signal_car;
+% signal_car=[];
+% for iRun=1:nRun
+%     for i=1:length(Aux)
+%     j = 1;
+%         for t = 512:32:size(Aux{1,iRun}.data,1) %we remove the last window (not of 1 second)
+%             for idxChannels = 1:16
+%                 signal_car{iRun}.Windows(:,idxChannels,j)=Aux{1,iRun}.data(t-512+1:t,idxChannels);
+%             end 
+%             j= j+1;
+%             j
+%         end
+%     end
+% end
+% 
+% sessionPSD=[];
+% for iRun=2:nRun %1:nRun
+%     sessionPSD{iRun}.data=zeros(16,19,size(signal_car{iRun}.Windows,3));
+%     for j=1:size(signal_car{iRun}.Windows,3)
+%         for idxChannels=1:16
+%             [psd,freqgrid] = pwelch(signal_car{iRun}.Windows(:,idxChannels,j),0.5*512,0.4375*512,f,512);
+%             psd=log(psd);
+% %             [freqs, idfreqs] = intersect(freqgrid,f);
+% %             psd = psd(idfreqs);
+%             sessionPSD{iRun}.data(idxChannels,:,j)=psd;
+%         end
+%     j    
+%     end
+% end
+sessionPSD = preprocess_spectrogram(signal_car,params_spectrogram);
+%sessionPSD2 = preprocess_spectrogram(Aux,params_spectrogram);
+% for i=1:4
+% sessionPSD{1,i}.rate=sessionPSD2{1,i}.rate;
+% sessionPSD{1,i}.event=sessionPSD2{1,i}.event;
+% sessionPSD{1,i}.freq=sessionPSD2{1,i}.freq;
+% end
 % return session with data in 3D (a new dimension for frequency!)
 
 %elisabetta: all the events starts 1 second before the real one (backwards)
@@ -185,12 +222,18 @@ for iFold=1:nFold
 end
 
 %error
+MinClassError=0.5;
 figure
 for iClassifier=1:numel(Classifier)
     class_error4Classifier = squeeze(class_error(:,iClassifier,:));
     
     meanClassError = mean(class_error4Classifier,1);
-   % stdError(iClassifier,:)=std(meanClassError); %for each classifier
+    [m,i]=min(meanClassError);
+    if m<MinClassError
+        MinClassError=m;
+        hyperparameters=[i Classifier{iClassifier}];
+    end
+    % stdError(iClassifier,:)=std(meanClassError); %for each classifier
     stdError(iClassifier,:)=std(class_error4Classifier); %for each classifier
     %errorbar(featuresList,meanClassError,stdError(iClassifier,:));
     plot(featuresList,meanClassError)
@@ -252,14 +295,12 @@ title('Fisher discriminant power of features')
 h=colorbar;
 
 %% train on all the data set with the parameters selection
-Nsel=6;
-% linear is better because the std is smaller
-
-%Supponiamo Nsel=10, classifiertype=linear
-
 
 for j=1:size(EpochTraining.MITerm.data,3)
     dataTraining(j,:)=reshape(EpochTraining.MITerm.data(:,:,j)',[1,16*19]); 
 end    
+[dataTraining, Mu, Sigma]=zscore(dataTraining);
+classifier =fitcdiscr(dataTraining(:,indexPower(1:hyperparameters(1))),EpochTraining.MITerm.labels,'discrimtype', hyperparameters(2));
 
-classifier =fitcdiscr(dataTraining(:,indexPower(1:10)),EpochTraining.MITerm.labels,'discrimtype', 'linear');
+%Online plot
+[Trials,SmoothedTotal]=real_online(s{1,length(s)},Mu,Sigma,classifier,indexPower(1:hyperparameters(1)));
