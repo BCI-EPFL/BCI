@@ -231,7 +231,8 @@ for iClassifier=1:numel(Classifier)
     [m,i]=min(meanClassError);
     if m<MinClassError
         MinClassError=m;
-        hyperparameters=[i Classifier{iClassifier}];
+        hyperparameters.Nsel=i;
+        hyperparameters.ClassifierType=Classifier{iClassifier};
     end
     % stdError(iClassifier,:)=std(meanClassError); %for each classifier
     stdError(iClassifier,:)=std(class_error4Classifier); %for each classifier
@@ -300,7 +301,7 @@ for j=1:size(EpochTraining.MITerm.data,3)
     dataTraining(j,:)=reshape(EpochTraining.MITerm.data(:,:,j)',[1,16*19]); 
 end    
 [dataTraining, Mu, Sigma]=zscore(dataTraining);
-classifier =fitcdiscr(dataTraining(:,indexPower(1:hyperparameters(1))),EpochTraining.MITerm.labels,'discrimtype', hyperparameters(2));
+classifier =fitcdiscr(dataTraining(:,indexPower(1:hyperparameters.Nsel)),EpochTraining.MITerm.labels,'discrimtype',  hyperparameters.ClassifierType);
 
 %Online plot
-[Trials,SmoothedTotal]=real_online(s{1,length(s)},Mu,Sigma,classifier,indexPower(1:hyperparameters(1)));
+[Trials,SmoothedTotal]=real_online(s{1,length(s)},Mu,Sigma,classifier,indexPower(1:hyperparameters.Nsel));

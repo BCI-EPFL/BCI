@@ -231,10 +231,10 @@ for iClassifier=1:numel(Classifier)
     [m,i]=min(meanClassError);
     if m<MinClassError
         MinClassError=m;
-        hyperparameters=[i Classifier{iClassifier}]
+        hyperparameters.Nsel=i;
+        hyperparameters.ClassifierTyp=Classifier{iClassifier};
     end
-    
-   % stdError(iClassifier,:)=std(meanClassError); %for each classifier
+    % stdError(iClassifier,:)=std(meanClassError); %for each classifier
     stdError(iClassifier,:)=std(class_error4Classifier); %for each classifier
     %errorbar(featuresList,meanClassError,stdError(iClassifier,:));
     plot(featuresList,meanClassError)
@@ -296,17 +296,12 @@ title('Fisher discriminant power of features')
 h=colorbar;
 
 %% train on all the data set with the parameters selection
-Nsel=6;
-% linear is better because the std is smaller
-
-%Supponiamo Nsel=10, classifiertype=linear
-
 
 for j=1:size(EpochTraining.MITerm.data,3)
     dataTraining(j,:)=reshape(EpochTraining.MITerm.data(:,:,j)',[1,16*19]); 
 end    
 [dataTraining, Mu, Sigma]=zscore(dataTraining);
-classifier =fitcdiscr(dataTraining(:,indexPower(1:10)),EpochTraining.MITerm.labels,'discrimtype', 'linear');
+classifier =fitcdiscr(dataTraining(:,indexPower(1:hyperparameters(1))),EpochTraining.MITerm.labels,'discrimtype', hyperparameters(2));
 
 %Online plot
-[Trials,SmoothedTotal]=real_online(s{1,length(s)},Mu,Sigma,classifier,indexPower(1:10));
+[Trials,SmoothedTotal]=real_online(s{1,length(s)},Mu,Sigma,classifier,indexPower(1:hyperparameters(1)));
