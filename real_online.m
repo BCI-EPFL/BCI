@@ -4,9 +4,9 @@ Inputs: whole signal 4th run (s{1,4}=Session), mu, sigma, classifier, FeaturesIn
 
 
 %}
+global SubjectID
 
-
-f=[4:2:40];
+f=4:2:40;
 
 %%Divide the run into the (30) trials
 TrialStart=Session.event.position(Session.event.name==400);%400=MI initiation
@@ -96,9 +96,10 @@ for i=1:length(Trials)
 end
 xlabel('Trials')
 ylabel('Smoothed probability')
+title(sprintf('Accumulated Evidence -  %s', SubjectID))
 xlim([1-0.5*length(Evidence{1,1})*30/length(SmoothedTotal) 31-30/length(SmoothedTotal)-0.5*length(Evidence{1,1})*30/length(SmoothedTotal)])
 %set(gca,'TickLength',[0 0]);
-set(gca,'xtick',[5:5:30]);
+set(gca,'xtick',5:5:30);
 
 
 end
