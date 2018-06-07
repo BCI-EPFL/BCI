@@ -97,31 +97,35 @@ ClassError.std=StdClassError;
 
 %% perfcurve
 
-iClassifier=find(strcmp(Classifier, hyperparameters.ClassifierType));
-iFeature=hyperparameters.Nsel;
-XRoc=[];
-YRoc=[];
-AUCRoc=[];
-for iFold=1:10
-    XRoc=cat(1,XRoc,(X{iFeature,iClassifier,iFold})');
-    YRoc=cat(1,YRoc,(Y{iFeature,iClassifier,iFold})');
-    AUCRoc=cat(1,AUCRoc,(AUC{iFeature,iClassifier,iFold})');
-end
-XRocMean=mean(XRoc);
-YRocMean=mean(YRoc);
-YRocStd=std(YRoc);
-AUCMean=mean(AUCRoc);
-AUCStd=std(AUCRoc);
-AUC=[];
-AUC.Mean=AUCMean;
-AUC.Std=AUCStd;
+if strcmp(hyperparameters.ClassifierType,'diaglinear')&&strcmp(hyperparameters.ClassifierType,'diagquadratic')
+    iClassifier=find(strcmp(Classifier, hyperparameters.ClassifierType));
+    iFeature=hyperparameters.Nsel;
+    XRoc=[];
+    YRoc=[];
+    AUCRoc=[];
+    for iFold=1:10
+        XRoc=cat(1,XRoc,(X{iFeature,iClassifier,iFold})');
+        YRoc=cat(1,YRoc,(Y{iFeature,iClassifier,iFold})');
+        AUCRoc=cat(1,AUCRoc,(AUC{iFeature,iClassifier,iFold})');
+    end
+    XRocMean=mean(XRoc);
+    YRocMean=mean(YRoc);
+    YRocStd=std(YRoc);
+    AUCMean=mean(AUCRoc);
+    AUCStd=std(AUCRoc);
+    AUC=[];
+    AUC.Mean=AUCMean;
+    AUC.Std=AUCStd;
     
-figure
-plotshaded(XRocMean,[YRocMean-YRocStd; YRocMean; YRocMean+YRocStd],'b')
-set(gca,'YLim',[0 1])
-xlabel('False positive rate') 
-ylabel('True positive rate')
-title(sprintf('ROC curve averaged over the folds -  %s', SubjectID))
+    figure
+    plotshaded(XRocMean,[YRocMean-YRocStd; YRocMean; YRocMean+YRocStd],'b')
+    set(gca,'YLim',[0 1])
+    xlabel('False positive rate') 
+    ylabel('True positive rate')
+    title(sprintf('ROC curve averaged over the folds -  %s', SubjectID))
+else
+    disp('mean ROC curve not possible for diaglinear/diagquadratic');
+end
 
 %% average outside CV
 
