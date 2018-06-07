@@ -1,4 +1,5 @@
-function [hyperparameters,MinClassError,ClassError,AUC]=cross_validation(Folds,featuresList,nFold)
+function [hyperparameters,MinClassError,AUC]=cross_validation(Folds,featuresList,nFold)
+
 %{
 Inputs
 -Folds: trial-based folds. Need to be organized like this:
@@ -13,9 +14,6 @@ Outputs
                   the best model (i.e. the model with lowest class error)
 -MinClassError: class error (averaged over the nFold folds) corresponding
                 to the best model
--ClassError: struct containing the mean (over the folds) of the class error
-             for the best model (i.e. the model with the lowest average
-             class error) and the std
 -AUC: struct containing the mean (over the folds) value of the AUC for the 
       best model and the std
 %}
@@ -33,6 +31,9 @@ yPredicted = [];
 PosteriorProb = [];
 X=[];
 Y=[];
+Xtot=[];
+Ytot=[];
+AUCtot=[];
 
 for iFold=1:nFold
     fprintf('Fold %d \n', iFold);
@@ -93,29 +94,26 @@ xlabel('Features');
 ylabel('Class error');
 
 ClassError.mean=MinClassError;
-ClassError.std=StdClassError;
-
+ClassError.std=
 %% perfcurve
 
 iClassifier=find(strcmp(Classifier, hyperparameters.ClassifierType));
 iFeature=hyperparameters.Nsel;
-XRoc=[];
-YRoc=[];
-AUCRoc=[];
 for iFold=1:10
     XRoc=cat(1,XRoc,(X{iFeature,iClassifier,iFold})');
     YRoc=cat(1,YRoc,(Y{iFeature,iClassifier,iFold})');
-    AUCRoc=cat(1,AUCRoc,(AUC{iFeature,iClassifier,iFold})');
+    AUCRoc=cat(1,YRoc,(AUC{iFeature,iClassifier,iFold})');
 end
 XRocMean=mean(XRoc);
 YRocMean=mean(YRoc);
 YRocStd=std(YRoc);
-AUCMean=mean(AUCRoc);
-AUCStd=std(AUCRoc);
+AUCMean=mean(AUC);
+AUCStd=std(AUC);
 AUC=[];
 AUC.Mean=AUCMean;
 AUC.Std=AUCStd;
-    
+    end
+end
 figure
 plotshaded(XRocMean,[YRocMean-YRocStd; YRocMean; YRocMean+YRocStd],'b')
 set(gca,'YLim',[0 1])

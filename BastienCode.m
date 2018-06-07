@@ -96,8 +96,6 @@ epoch_MI_term=epoch_window(runconc,555,0.5,2.5,params_spectrogram.mlength,params
 
 %% MI initiation vs MI Termination
 
-%thresholdCross=0.75;
-%thresholdCross=2/3;
 EpochTraining.MITerm.data=cat(3, epoch_MI.samples(:,:,1:floor(thresholdCross*size(epoch_MI.samples,3))), epoch_MI_term.samples(:,:,1:floor(thresholdCross*size(epoch_MI_term.samples,3))));
 EpochTraining.MITerm.labels=cat(1,400*ones(floor(thresholdCross*size(epoch_MI.labels,1)),1), epoch_MI_term.labels(1:floor(thresholdCross*size(epoch_MI_term.labels,1))));
  
@@ -137,7 +135,7 @@ end
 featuresList = 1:25;
 nFold = 10;
 
-[hyperparameters,minClassError]=cross_validation(Folds, featuresList,nFold);
+[hyperparameters,minClassError,BestModel.ClassError,BestModel.AUC]=cross_validation(Folds, featuresList,nFold);
 
 %% Training on the whole training 75% (66%) data set with the parameters selection
 
@@ -175,6 +173,22 @@ title(sprintf('ROC curve -  %s', SubjectID))
 
 %confusion matrix
 Metrics.ConfMat=confusionmat(EpochTesting.MITerm.labels,yhatTesting);
+
+figure
+histogram(dataTesting(EpochTesting.MITerm.labels==400,indexTraining(1)));
+hold on
+histogram(dataTesting(EpochTesting.MITerm.labels==555,indexTraining(1)));
+
+figure
+histogram(dataTraining(EpochTesting.MITerm.labels==400,indexTraining(1)));
+hold on
+histogram(dataTraining(EpochTesting.MITerm.labels==555,indexTraining(1)));
+
+figure
+scatter(dataTesting(EpochTesting.MITerm.labels==400,indexTraining(1)),dataTesting(EpochTesting.MITerm.labels==400,indexTraining(2)));
+hold on
+scatter(dataTesting(EpochTesting.MITerm.labels==555,indexTraining(1)),dataTesting(EpochTesting.MITerm.labels==400,indexTraining(2)));
+line
 
 %% ONLINE
 [Trials,SmoothedTotal]=real_online(s{1,length(s)},Mu,Sigma,classifier,indexTraining(1:hyperparameters.Nsel),0.96);
