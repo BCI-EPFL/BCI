@@ -1,129 +1,125 @@
-%% ONLINE %%
+function [Trials,SmoothedTotal]=online(Session,Mu,Sigma,classifier,FeaturesIndeces,alpha)
+%{
+Inputs: whole signal 4th run (s{1,4}=Session), mu, sigma, classifier, FeaturesIndeces
 
-% parameters
-timeFrame = 1; % one second buffer length
-nonoverlap = 0.0625; % 62.5ms frame shift
 
-samplingRate=512;
-psdWindow = 0.5*samplingRate;
-psdNOverlap = 0.25*samplingRate;
-f = [4:2:40];
+%}
+global SubjectID
 
-alphaEvidenceAccumulation = 0.96; % smoothing parameter
+f=4:2:40;
 
-% extract the true stopping points
-stopId = 555;
-%stopTimesInSR = sessions{1,4}.EVENT.POS(sessions{1,4}.EVENT.TYP == 555);
-stopTimesInSR = s{1,4}.event.position(s{1,4}.event.name == 555);
+%%Divide the run into the (30) trials
+TrialStart=Session.event.position(Session.event.name==400);%400=MI initiation
+TrialEnd=Session.event.position(Session.event.name==700);%700=Relax phase
 
-OptFeat=10; 
-indexes = indexPower(1:OptFeat);%look for the first f best features
-newFeatures = TrainingData(:,indexes);%only the features selected
-classifier_online = fitcdiscr(newFeatures,TLabels(1:8730),'DiscrimType',type);
-
-testData = spatFilteredData{1,4}; % data for the pseudo online classification
-i = 1;
-for t = 512:32:size(testData,2)
-    for idxChannels = 1:NumChannels
-        bufferedData = testData(idxChannels,t-512+1:t);
-        [pxx(:,idxChannels,i),~] = pwelch(bufferedData,psdWindow,psdNOverlap,f,512);
-        %pxx(:,idxChannels,i) = log(pxx(:,idxChannels,i)); % take log for correct scaling
-    end 
-    i= i+1;
+Trials=[];
+for i=1:(length(TrialStart))
+    Trials{i}=Session.data(TrialStart(i):TrialEnd(i),:)';
 end
 
-% reshape pxx to have same dimensionality as feature matrix
-pxx = reshape(pxx,[19*16,size(pxx,3)]);
-pxx = pxx';
-% extract best features
-pxx_bestFeat = pxx(:,indexes);
-% normalize wrt newfeatures matrix
-pxx_bestFeat = zscore(pxx_bestFeat);
 
-% predict (with score output)
-[~,rawScore_bufferedData] = predict(classifier_online,pxx_bestFeat);
-% smooth score 
-smoothScore_bufferedData = zeros(size(pxx_bestFeat,1),2);
-smoothScore_bufferedData(1,:) = 0.5; % initialize first element at 0.5 for equal probs
-for idx = 2:size(pxx_bestFeat,1)
-    smoothScore_bufferedData(idx,:) = alphaEvidenceAccumulation*smoothScore_bufferedData(idx-1,:) ...
-        + (1-alphaEvidenceAccumulation)*rawScore_bufferedData(idx,:);
+
+%%Divide each trial into 1-second windows shifted by 0.0625s
+%(1 second=512 points; 0.0625 s = 32 points)
+Aux=Trials;
+Trials=[];
+for i=1:length(Aux)
+j = 1;
+    for t = 512:32:(size(Aux{i},2)-mod(size(Aux{i},2),32)) %we remove the last window (not of 1 second)
+        for idxChannels = 1:16
+            Trials{i}.Windows(idxChannels,:,j)=Aux{i}(idxChannels,t-512+1:t);
+        end 
+        j= j+1;
+    end
 end
 
-x = 0.5*ones(size(pxx_bestFeat,1),1);
-x_axisVector = 1/16:1/16:(size(smoothScore_bufferedData,1))/16;
-stopTimesInSeconds = stopTimesInSR./16;
+%% Real pseudoonline
+Evidence=[];
+for i=1:length(Trials)
+   Evidence{i}=zeros(1,size(Trials{i}.Windows,3)+1);
+   Evidence{1,i}(1)=0.5; %for each trial we start by 0.5
+   Trials{i}.Features=zeros(size(Trials{i}.Windows,3),304);
+   
+   for j=1:size(Trials{i}.Windows,3)
+       %%CAR filtering
+       mean_channels=[];
+       mean_channels = mean(Trials{i}.Windows(:,:,j));
+       Trials{i}.Windows(:,:,j) = Trials{i}.Windows(:,:,j)- mean_channels;
+       
+       %%pwelch (already reshaped)
+       for idxChannels=1:16
+            %[psd,freqgrid] = pwelch(Trials{i}.Windows(idxChannels,:,j),0.5*512,0.4375*512,[],512);
+            %psd=log(psd);
+            %[freqs, idfreqs] = intersect(freqgrid,f);
+            %psd = psd(idfreqs);
+            %Trials{i}.Features(j,(19*(idxChannels-1)+1):19*idxChannels)=psd;
+            Trials{i}.Features(j,(19*(idxChannels-1)+1):19*idxChannels)=pwelch(Trials{i}.Windows(idxChannels,:,j),0.5*512,0.25*512,f,512);%0.4375*512
+       end
+       for idxChannels=1:16
+            Trials{i}.Features(j,19*(idxChannels-1)+1:19*idxChannels) = log(Trials{i}.Features(j,19*(idxChannels-1)+1:19*idxChannels));
+       end 
+       
+       %%normalization
+       Trials{i}.Features(j,:)=(Trials{i}.Features(j,:)-Mu)./Sigma;
+       
+       %%predict (posterior prob)
+       [Trials{i}.Predicted(j),Trials{i}.PosteriorProb(j,:),~]=predict(classifier,Trials{i}.Features(j,FeaturesIndeces));
 
-% general figure over whole session
-figure(j)
+       
+       %%smoothing
+       Evidence{1,i}(j+1)=Evidence{1,i}(j)*alpha+(1-alpha)*Trials{i}.PosteriorProb(j,2);
+       fprintf('Trial %d Window %d \n',i,j);
+
+   end
+   
+end
+
+%% Concatenate all the smoothed probabilities
+SmoothedTotal=[];
+for i=1:length(Trials)
+   SmoothedTotal=cat(2,SmoothedTotal,Evidence{1,i}); 
+end
+
+figure
+sz = 4;
+c = [0,0,1];
+scatter((1-0.5*length(Evidence{1,1})*30/length(SmoothedTotal)):(30/length(SmoothedTotal)):(31-30/length(SmoothedTotal)-0.5*length(Evidence{1,1})*30/length(SmoothedTotal)),SmoothedTotal,sz,c,'filled')
 hold on
-plot(x_axisVector,smoothScore_bufferedData(:,1))
-plot(x_axisVector,x,'k--');
-for idxLine = 1:30
-    plot([stopTimesInSeconds(idxLine) stopTimesInSeconds(idxLine)],[0 1],'r');
+cont=1-0.5*length(Evidence{1,1})*30/length(SmoothedTotal);
+for i=1:length(Trials)
+    if cont~=1-0.5*length(Evidence{1,1})*30/length(SmoothedTotal)
+        vline(cont,'r','');
+%     else
+%         vline(cont,'k','');
+    end
+    cont=cont+length(Evidence{1,i})*30/length(SmoothedTotal);
 end
-hold off
-title(['smoothed pseude online classification for subject: ',testPerson,', using alpha = ',num2str(alphaEvidenceAccumulation)],'FontSize',24)
-xlabel('time [s]','FontSize',22)
-ylabel('decoder probability of motor termination','FontSize',22)
-legend('motor termination','threshold 50%','stop-times')
-j = j-1;
-k = 50;
-%% subsampling around stop times + figure averaging
+xlabel('Trials')
+ylabel('Smoothed probability')
+title(sprintf('Accumulated Evidence -  %s', SubjectID))
+xlim([1-0.5*length(Evidence{1,1})*30/length(SmoothedTotal) 31-30/length(SmoothedTotal)-0.5*length(Evidence{1,1})*30/length(SmoothedTotal)])
+%set(gca,'TickLength',[0 0]);
+set(gca,'xtick',5:5:30);
 
-windowAroundStop = -2:1/16:3;
-threshShort = 0.5*ones(size(windowAroundStop,2),1);
-
-for idxTrial = 1:30
-    startIdx = stopTimesInSR(idxTrial)+windowAroundStop(1)*16;
-    stopIdx = stopTimesInSR(idxTrial)++windowAroundStop(end)*16;
-    smoothScoreAroundStop(:,idxTrial) = smoothScore_bufferedData([startIdx:stopIdx],1);
-end
-
-averageSmoothScoreAroundStop = mean(smoothScoreAroundStop,2);
-
-figure(k)
-for idxSP = 1:30
-    subplot(5,6,idxSP)
-    hold on;
-    plot(windowAroundStop,smoothScoreAroundStop(:,idxSP))
-    plot(windowAroundStop,threshShort,'k--');
-    hold off;
-    title (['Trial: ',num2str(idxSP)]);
-    ylim([0 1])
-    xlabel('time [s]')
-    ylabel('probability MT')
-    legend('motor termination')%,'threshold 50%','stop-times')
-end
-k = k-1;
-
-idxGoodTrials = [1,3,8,25];
-idxBadTrials = [2,15];
-
-figure(1)
-for idx = 1:4
-    subplot(2,2,idx)
-    hold on;
-    plot(windowAroundStop,smoothScoreAroundStop(:,idxGoodTrials(idx)))
-    plot(windowAroundStop,threshShort,'k--');
-    hold off;
-    title (['Trial: ',num2str(idxGoodTrials(idx))],'FontSize',24);
-    ylim([0 1])
-    xlabel('time [s]','FontSize',22)
-    ylabel('probability MT','FontSize',22)
-    legend('motor termination')%,'threshold 50%','stop-times')
+%% Examples of plots
+if SubjectID == "ak6"
+    
+    figure
+    plot([0:(length(Evidence{1,10})-1)]/16,Evidence{1,10},'b')%otherwise 6 or 7
+    xlabel('Time [s]')
+    ylabel('Accumulated Evidence')
+    set(gca,'YLim',[0 1])
+    title('Good Trial')
+    
+    figure
+    plot([0:(length(Evidence{1,22})-1)]/16,Evidence{1,22},'b')
+    xlabel('Time [s]')
+    ylabel('Accumulated Evidence')
+    set(gca,'YLim',[0 1])
+    title('Bad Trial')
+    
 end
 
-figure(2)
-for idx = 1:2
-    subplot(2,1,idx)
-    hold on;
-    plot(windowAroundStop,smoothScoreAroundStop(:,idxBadTrials(idx)))
-    plot(windowAroundStop,threshShort,'k--');
-    hold off;
-    title (['Trial: ',num2str(idxBadTrials(idx))],'FontSize',24);
-    ylim([0 1])
-    xlabel('time [s]','FontSize',22)
-    ylabel('probability MT','FontSize',22)
-    legend('motor termination')%,'threshold 50%','stop-times')
+
+
 end

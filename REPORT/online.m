@@ -1,11 +1,12 @@
+function [Trials,SmoothedTotal]=online(Session,Mu,Sigma,classifier,FeaturesIndeces,alpha)
 %{
 Inputs: whole signal 4th run (s{1,4}=Session), mu, sigma, classifier, FeaturesIndeces
 
 
 %}
+global SubjectID
 
-alpha=0.96;
-f=[4:2:40];
+f=4:2:40;
 
 %%Divide the run into the (30) trials
 TrialStart=Session.event.position(Session.event.name==400);%400=MI initiation
@@ -52,14 +53,14 @@ for i=1:length(Trials)
             %[freqs, idfreqs] = intersect(freqgrid,f);
             %psd = psd(idfreqs);
             %Trials{i}.Features(j,(19*(idxChannels-1)+1):19*idxChannels)=psd;
-            Trials{i}.Features(j,(19*(idxChannels-1)+1):19*idxChannels)=psd;
+            Trials{i}.Features(j,(19*(idxChannels-1)+1):19*idxChannels)=pwelch(Trials{i}.Windows(idxChannels,:,j),0.5*512,0.25*512,f,512);%0.4375*512
        end
        for idxChannels=1:16
             Trials{i}.Features(j,19*(idxChannels-1)+1:19*idxChannels) = log(Trials{i}.Features(j,19*(idxChannels-1)+1:19*idxChannels));
        end 
        
        %%normalization
-       Trials{i}.Features(j,:)=(Trials{i}.Features(j,:)-mu)./sigma;
+       Trials{i}.Features(j,:)=(Trials{i}.Features(j,:)-Mu)./Sigma;
        
        %%predict (posterior prob)
        [Trials{i}.Predicted(j),Trials{i}.PosteriorProb(j,:),~]=predict(classifier,Trials{i}.Features(j,FeaturesIndeces));
@@ -82,12 +83,43 @@ end
 figure
 sz = 4;
 c = [0,0,1];
-scatter(1:(30/length(SmoothedTotal)):(31-30/length(SmoothedTotal)),SmoothedTotal,sz,c,'filled')
+scatter((1-0.5*length(Evidence{1,1})*30/length(SmoothedTotal)):(30/length(SmoothedTotal)):(31-30/length(SmoothedTotal)-0.5*length(Evidence{1,1})*30/length(SmoothedTotal)),SmoothedTotal,sz,c,'filled')
 hold on
-cont=1;
+cont=1-0.5*length(Evidence{1,1})*30/length(SmoothedTotal);
 for i=1:length(Trials)
-    vline(cont,'r','');
+    if cont~=1-0.5*length(Evidence{1,1})*30/length(SmoothedTotal)
+        vline(cont,'r','');
+%     else
+%         vline(cont,'k','');
+    end
     cont=cont+length(Evidence{1,i})*30/length(SmoothedTotal);
 end
 xlabel('Trials')
 ylabel('Smoothed probability')
+title(sprintf('Accumulated Evidence -  %s', SubjectID))
+xlim([1-0.5*length(Evidence{1,1})*30/length(SmoothedTotal) 31-30/length(SmoothedTotal)-0.5*length(Evidence{1,1})*30/length(SmoothedTotal)])
+%set(gca,'TickLength',[0 0]);
+set(gca,'xtick',5:5:30);
+
+%% Examples of plots
+if SubjectID == "ak6"
+    
+    figure
+    plot([0:(length(Evidence{1,10})-1)]/16,Evidence{1,10},'b')%otherwise 6 or 7
+    xlabel('Time [s]')
+    ylabel('Accumulated Evidence')
+    set(gca,'YLim',[0 1])
+    title('Good Trial')
+    
+    figure
+    plot([0:(length(Evidence{1,22})-1)]/16,Evidence{1,22},'b')
+    xlabel('Time [s]')
+    ylabel('Accumulated Evidence')
+    set(gca,'YLim',[0 1])
+    title('Bad Trial')
+    
+end
+
+
+
+end
